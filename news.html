@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="대명한의원 소식 - 진료 안내, 공지사항, 이벤트">
+    <title>한의원 소식 - 대명한의원</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #b8762f;
+            --secondary-color: #e09855;
+            --accent-color: #d4af37;
+            --text-dark: #333;
+            --text-light: #666;
+            --bg-light: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: var(--text-dark);
+        }
+        
+        /* 상단 정보바 */
+        .top-bar {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        .top-bar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .top-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* 네비게이션 */
+        nav {
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+        
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: var(--secondary-color);
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+        
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 1.05em;
+            transition: color 0.3s;
+        }
+        
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: var(--primary-color);
+        }
+        
+        /* 페이지 헤더 */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '📰';
+            position: absolute;
+            font-size: 250px;
+            opacity: 0.05;
+            top: -50px;
+            right: 50px;
+            pointer-events: none;
+        }
+        
+        .page-header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .page-header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+        
+        /* 컨테이너 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        /* 카테고리 필터 */
+        .category-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .category-btn {
+            padding: 12px 30px;
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .category-btn:hover,
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        /* 게시글 그리드 */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .post-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(184, 118, 47, 0.2);
+        }
+        
+        .post-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            color: white;
+        }
+        
+        .post-content {
+            padding: 25px;
+        }
+        
+        .post-category {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(184, 118, 47, 0.1);
+            color: var(--primary-color);
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .post-title {
+            font-size: 1.4em;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .post-date {
+            color: var(--text-light);
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .post-excerpt {
+            color: var(--text-light);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        
+        .read-more {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: gap 0.3s ease;
+        }
+        
+        .read-more:hover {
+            gap: 10px;
+        }
+        
+        /* 추가 버튼 (관리자용) */
+        .admin-section {
+            background: var(--bg-light);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .admin-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .admin-section p {
+            color: var(--text-light);
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+        
+        .btn-add {
+            display: inline-block;
+            padding: 15px 40px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-add:hover {
+            background: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(184, 118, 47, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 정보바 -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-item">
+                <span>📞</span>
+                <span>02-2671-7191</span>
+            </div>
+            <div class="top-bar-item">
+                <span>🕐</span>
+                <span>월수목 09:30-19:00 | 화금 09:30-21:00 | 토 09:30-17:00</span>
+            </div>
+            <div class="top-bar-item">
+                <span>🚇</span>
+                <span>지하철 9호선 양평역 5번 출구 도보 3분</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">대명<span>한의원</span></a>
+            <ul class="nav-menu">
+                <li><a href="index.html">홈</a></li>
+                <li><a href="doctors.html">의료진</a></li>
+                <li><a href="acupotomy.html">침도요법</a></li>
+                <li><a href="cases.html">치료사례</a></li>
+                <li><a href="news.html" class="active">한의원소식</a></li>
+                <li><a href="health-tips.html">의학상식</a></li>
+                <li><a href="reviews.html">환자후기</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1>📰 한의원 소식</h1>
+        <p>대명한의원의 새로운 소식을 전해드립니다</p>
+    </div>
+
+    <div class="container">
+        <!-- 카테고리 필터 -->
+        <div class="category-filter">
+            <button class="category-btn active" onclick="filterPosts('all')">전체</button>
+            <button class="category-btn" onclick="filterPosts('공지사항')">공지사항</button>
+            <button class="category-btn" onclick="filterPosts('진료안내')">진료안내</button>
+            <button class="category-btn" onclick="filterPosts('이벤트')">이벤트</button>
+            <button class="category-btn" onclick="filterPosts('언론보도')">언론보도</button>
+        </div>
+
+        <!-- 관리자 안내 섹션 -->
+        <div class="admin-section">
+            <h3>✏️ 게시글 추가 방법</h3>
+            <p>
+                새로운 소식을 추가하려면 아래 HTML 템플릿을 복사하여 
+                &lt;!-- 게시글 시작 --&gt; 바로 아래에 붙여넣으세요.<br>
+                날짜, 제목, 내용, 카테고리를 수정하면 자동으로 표시됩니다.
+            </p>
+            <a href="#template" class="btn-add">📝 템플릿 보기</a>
+        </div>
+
+        <!-- 게시글 그리드 -->
+        <div class="posts-grid" id="postsGrid">
+            <!-- 게시글 시작 -->
+            
+            <!-- 예시 게시글 1 -->
+            <div class="post-card" data-category="공지사항">
+                <div class="post-image">📢</div>
+                <div class="post-content">
+                    <span class="post-category">공지사항</span>
+                    <h3 class="post-title">2026년 설연휴 진료 안내</h3>
+                    <p class="post-date">2026년 1월 20일</p>
+                    <p class="post-excerpt">
+                        설 연휴 기간 동안의 진료 일정을 안내드립니다. 
+                        1월 28일(화)부터 2월 1일(토)까지 휴진하며, 
+                        2월 2일(일)부터 정상 진료합니다.
+                    </p>
+                    <a href="#" class="read-more">자세히 보기 →</a>
+                </div>
+            </div>
+
+            <!-- 예시 게시글 2 -->
+            <div class="post-card" data-category="진료안내">
+                <div class="post-image">🏥</div>
+                <div class="post-content">
+                    <span class="post-category">진료안내</span>
+                    <h3 class="post-title">야간 진료 시간 연장 안내</h3>
+                    <p class="post-date">2026년 1월 15일</p>
+                    <p class="post-excerpt">
+                        직장인 환자분들의 편의를 위해 화요일과 금요일 
+                        야간 진료 시간을 21:00까지 연장합니다. 
+                        예약 우선 진료로 운영됩니다.
+                    </p>
+                    <a href="#" class="read-more">자세히 보기 →</a>
+                </div>
+            </div>
+
+            <!-- 예시 게시글 3 -->
+            <div class="post-card" data-category="이벤트">
+                <div class="post-image">🎁</div>
+                <div class="post-content">
+                    <span class="post-category">이벤트</span>
+                    <h3 class="post-title">신규 환자 첫 진료 이벤트</h3>
+                    <p class="post-date">2026년 1월 10일</p>
+                    <p class="post-excerpt">
+                        2월 한 달간 처음 내원하시는 신규 환자분들께 
+                        침도 초진료 20% 할인 혜택을 제공합니다. 
+                        전화 예약 시 '이벤트'를 말씀해주세요.
+                    </p>
+                    <a href="#" class="read-more">자세히 보기 →</a>
+                </div>
+            </div>
+
+            <!-- 예시 게시글 4 -->
+            <div class="post-card" data-category="언론보도">
+                <div class="post-image">📺</div>
+                <div class="post-content">
+                    <span class="post-category">언론보도</span>
+                    <h3 class="post-title">유명석 원장, ICMART 학회 발표</h3>
+                    <p class="post-date">2025년 12월 7일</p>
+                    <p class="post-excerpt">
+                        유명석 원장이 ICMART 국제 학회에서 
+                        '경추 신경근병증의 침도 치료' 주제로 라이브 세션을 
+                        성공적으로 진행했습니다.
+                    </p>
+                    <a href="#" class="read-more">자세히 보기 →</a>
+                </div>
+            </div>
+
+            <!-- 예시 게시글 5 -->
+            <div class="post-card" data-category="공지사항">
+                <div class="post-image">💉</div>
+                <div class="post-content">
+                    <span class="post-category">공지사항</span>
+                    <h3 class="post-title">새로운 침도 장비 도입</h3>
+                    <p class="post-date">2025년 11월 25일</p>
+                    <p class="post-excerpt">
+                        최신 초음파 유도 침도 시스템을 도입하여 
+                        더욱 정밀하고 안전한 침도 치료가 가능해졌습니다. 
+                        실시간 영상으로 정확한 치료 부위를 확인합니다.
+                    </p>
+                    <a href="#" class="read-more">자세히 보기 →</a>
+                </div>
+            </div>
+
+            <!-- 예시 게시글 6 -->
+            <div class="post-card" data-category="이벤트">
+                <div class="post-image">👨‍👩‍👧‍👦</div>
+                <div class="post-content">
+                    <span class="post-category">이벤트</span>
+                    <h3 class="post-title">가족 동반 할인 이벤트</h3>
+                    <p class="post-date">2025년 11월 15일</p>
+                    <p class="post-excerpt">
+                        가족 구성원 2인 이상 함께 내원 시 
+                        각각 10% 할인 혜택을 드립니다. 
+                        건강한 가족을 위한 특별 프로모션입니다.
+                    </p>
+                    <a href="#" class="read-more">자세히 보기 →</a>
+                </div>
+            </div>
+
+            <!-- 여기에 새로운 게시글을 추가하세요 -->
+            
+        </div>
+
+        <!-- 게시글 추가 템플릿 -->
+        <div id="template" style="background: #f0f0f0; padding: 30px; border-radius: 15px; margin-top: 60px;">
+            <h2 style="color: var(--primary-color); margin-bottom: 20px;">📝 게시글 추가 템플릿</h2>
+            <p style="margin-bottom: 20px; color: #666;">아래 코드를 복사하여 &lt;!-- 게시글 시작 --&gt; 바로 아래에 붙여넣고 내용을 수정하세요.</p>
+            <pre style="background: white; padding: 20px; border-radius: 10px; overflow-x: auto; font-size: 0.9em;"><code>&lt;!-- 새 게시글 --&gt;
+&lt;div class="post-card" data-category="공지사항"&gt;
+    &lt;div class="post-image"&gt;📢&lt;/div&gt;
+    &lt;div class="post-content"&gt;
+        &lt;span class="post-category"&gt;공지사항&lt;/span&gt;
+        &lt;h3 class="post-title"&gt;여기에 제목을 입력하세요&lt;/h3&gt;
+        &lt;p class="post-date"&gt;2026년 2월 9일&lt;/p&gt;
+        &lt;p class="post-excerpt"&gt;
+            여기에 간단한 요약 내용을 입력하세요. 
+            2-3줄 정도가 적당합니다.
+        &lt;/p&gt;
+        &lt;a href="#" class="read-more"&gt;자세히 보기 →&lt;/a&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+            
+            <h3 style="color: var(--primary-color); margin: 30px 0 15px;">🎨 카테고리별 아이콘</h3>
+            <div style="background: white; padding: 20px; border-radius: 10px;">
+                <p style="margin: 5px 0;">📢 공지사항</p>
+                <p style="margin: 5px 0;">🏥 진료안내</p>
+                <p style="margin: 5px 0;">🎁 이벤트</p>
+                <p style="margin: 5px 0;">📺 언론보도</p>
+                <p style="margin: 5px 0;">💉 치료정보</p>
+                <p style="margin: 5px 0;">👨‍⚕️ 의료진소식</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 카테고리 필터링
+        function filterPosts(category) {
+            const posts = document.querySelectorAll('.post-card');
+            const buttons = document.querySelectorAll('.category-btn');
+            
+            // 버튼 활성화 상태 변경
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 게시글 필터링
+            posts.forEach(post => {
+                if (category === 'all' || post.dataset.category === category) {
+                    post.style.display = 'block';
+                } else {
+                    post.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

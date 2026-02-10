@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="대명한의원 의료진 소개 - 류명석 원장, 구원모 원장">
+    <title>의료진 소개 - 대명한의원</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #b8762f;
+            --secondary-color: #e09855;
+            --accent-color: #d4af37;
+            --text-dark: #333;
+            --text-light: #666;
+            --bg-light: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: var(--text-dark);
+        }
+        
+        /* 상단 정보바 */
+        .top-bar {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        .top-bar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .top-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* 네비게이션 */
+        nav {
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+        
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: var(--secondary-color);
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+        
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 1.05em;
+            transition: color 0.3s;
+        }
+        
+        .nav-menu a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* 페이지 헤더 */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '👨‍⚕️';
+            position: absolute;
+            font-size: 250px;
+            opacity: 0.05;
+            top: -50px;
+            right: -30px;
+            pointer-events: none;
+        }
+        
+        .page-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(255, 255, 255, 0.03) 100px,
+                    rgba(255, 255, 255, 0.03) 101px
+                );
+            pointer-events: none;
+        }
+        
+        .page-header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .page-header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+        
+        /* 컨테이너 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+        
+        /* 원장 프로필 카드 */
+        .doctor-profile {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 60px;
+        }
+        
+        .doctor-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .doctor-header h2 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        
+        .doctor-title {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 5px;
+        }
+        
+        .doctor-specialty {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .doctor-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 50px;
+            padding: 50px;
+        }
+        
+        .doctor-image-section {
+            text-align: center;
+        }
+        
+        .doctor-image-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        .doctor-image-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 3px solid var(--secondary-color);
+            border-radius: 15px;
+            z-index: -1;
+        }
+        
+        .doctor-image {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .contact-info {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .contact-info p {
+            margin: 10px 0;
+            font-size: 1.05em;
+        }
+        
+        .doctor-info-section {
+            flex: 1;
+        }
+        
+        .info-block {
+            margin-bottom: 40px;
+        }
+        
+        .info-block h3 {
+            color: var(--primary-color);
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        .info-block p {
+            font-size: 1.1em;
+            line-height: 1.9;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+        
+        .credentials-list {
+            background: linear-gradient(135deg, #f0f7f0 0%, #e8f4e8 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid var(--primary-color);
+            margin: 20px 0;
+        }
+        
+        .credentials-list h4 {
+            color: var(--primary-color);
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        
+        .credentials-list ul {
+            list-style: none;
+        }
+        
+        .credentials-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 1.05em;
+        }
+        
+        .credentials-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        /* 특화 분야 */
+        .specialties {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .specialty-badge {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--secondary-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .specialty-badge:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(44, 95, 45, 0.15);
+        }
+        
+        .specialty-badge h4 {
+            color: var(--primary-color);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .specialty-badge p {
+            font-size: 0.95em;
+            color: var(--text-light);
+            margin: 0;
+        }
+        
+        /* 하이라이트 박스 */
+        .highlight-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+            border: 2px solid #ffd966;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .highlight-box h4 {
+            color: #d97706;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+        
+        .highlight-box p {
+            font-size: 1.1em;
+            line-height: 1.9;
+            margin: 0;
+        }
+        
+        /* 타임라인 */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin-top: 20px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            background: var(--bg-light);
+            border-radius: 10px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 20px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--secondary-color);
+        }
+        
+        .timeline-year {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 968px) {
+            .doctor-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .page-header h1 {
+                font-size: 2em;
+            }
+            
+            .specialties {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .doctor-content {
+                padding: 30px 20px;
+            }
+            
+            .nav-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 상단 정보바 -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-item">
+                <span>📞</span>
+                <span>02-2671-7191</span>
+            </div>
+            <div class="top-bar-item">
+                <span>🕐</span>
+                <span>월수목 09:30-19:00 | 화금 09:30-21:00 | 토 09:30-17:00</span>
+            </div>
+            <div class="top-bar-item">
+                <span>🚇</span>
+                <span>지하철 9호선 양평역 5번 출구 도보 3분</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">대명<span>한의원</span></a>
+            <ul class="nav-menu">
+                <li><a href="index.html">홈</a></li>
+                <li><a href="doctors.html">의료진</a></li>
+                <li><a href="acupotomy.html">침도요법</a></li>
+                <li><a href="cases.html">치료사례</a></li>
+                <li><a href="news.html">한의원소식</a></li>
+                <li><a href="health-tips.html">의학상식</a></li>
+                <li><a href="reviews.html">환자후기</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1>👨‍⚕️ 의료진 소개</h1>
+        <p>전문성과 경험을 갖춘 대명한의원의 의료진을 소개합니다</p>
+    </div>
+
+    <!-- 류명석 원장 -->
+    <div class="container">
+        <div class="doctor-profile">
+            <div class="doctor-header">
+                <h2>유명석 원장</h2>
+                <p class="doctor-title">대한침도의학회 회장 | 한의학 박사</p>
+                <p class="doctor-specialty">침도 치료 전문 | 척추·관절 질환 전문</p>
+            </div>
+            
+            <div class="doctor-content">
+                <div class="doctor-image-section">
+                    <div class="doctor-image-wrapper">
+                        <img src="ryu-director.jpg" alt="유명석 원장" class="doctor-image">
+                    </div>
+                    <div class="contact-info">
+                        <p><strong>진료 요일</strong></p>
+                        <p>화, 수, 금, 토</p>
+                        <p style="margin-top: 15px;"><strong>예약 문의</strong></p>
+                        <p>📞 02-2671-7191</p>
+                    </div>
+                </div>
+                
+                <div class="doctor-info-section">
+                    <div class="info-block">
+                        <h3>💼 소개</h3>
+                        <p>
+                            유명석 원장은 2004년 대명한의원 개원 이후 20년 넘게 침도 치료 분야에서 
+                            한국을 대표하는 권위자로 활동하고 있습니다. "한의사를 교육하는 한의사"로 불리며, 
+                            국내외 의료진을 대상으로 침도 치료 기법을 교육하고 있습니다.
+                        </p>
+                        <p>
+                            정침학회와 연부조직한의학회를 설립하며 침도 의학의 발전을 이끌어왔으며, 
+                            현재 대한침도의학회 회장으로서 침도 치료의 표준을 정립하고 
+                            국내외에 그 우수성을 알리는 데 힘쓰고 있습니다.
+                        </p>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h4>🎖️ "한의사를 교육하는 한의사"</h4>
+                        <p>
+                            매년 40~60명의 한의사를 교육하며, 미국·캐나다·러시아·중국 등 
+                            전 세계 10개국 이상의 의료진을 대상으로 정침(RSN) 침도 치료 기법을 강의하고 있습니다. 
+                            국제 학술대회(ICMART, ISAM 등)에서 정기적으로 연구 결과를 발표하며 
+                            침도 의학의 세계화를 선도하고 있습니다.
+                        </p>
+                    </div>
+                    
+                    <div class="credentials-list">
+                        <h4>🎓 학력 및 주요 경력</h4>
+                        <ul>
+                            <li>2004년 원광대학교 한의과대학 졸업</li>
+                            <li>2004년 대명한의원 개원</li>
+                            <li>2017년 The Honorary Degree of Doctor of Philosophy in Oriental Medicine from American Liberty University</li>
+                            <li>가천대학교 겸임교수 (2020-2022)</li>
+                            <li>경희대학교 외래교수 (2020)</li>
+                            <li>동국대학교 외래교수 (2025)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="credentials-list">
+                        <h4>🏆 주요 활동 및 수상</h4>
+                        <ul>
+                            <li>2012년 정침학회 설립 및 회장 역임</li>
+                            <li>2016년 대한연부조직한의학회 설립 및 회장</li>
+                            <li>2022년~현재 대한침도의학회 회장</li>
+                            <li>2010년~현재 RSN(Ryu's Soft tissue & Nerve) Acupuncture & Acupotomy 강좌 운영</li>
+                            <li>국제 학술대회 정기 발표 (ICMART, ISAM 등)</li>
+                            <li>SCI급 국제 학술지 논문 게재 다수</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h3>📚 주요 발표 논문 및 연구</h3>
+                        <p style="margin-bottom: 20px; color: #666;">
+                            <strong>ORCID:</strong> <a href="https://orcid.org/0000-0001-9349-8124" target="_blank" style="color: #2c5f2d; text-decoration: none;">0000-0001-9349-8124</a>
+                        </p>
+                        
+                        <div class="credentials-list" style="margin-bottom: 20px;">
+                            <h4>📄 국제 학술대회 발표</h4>
+                            <ul>
+                                <li><strong>2025년 12월</strong> - Acupotomy Treatment for Cervical Radiculopathy (Live Session, ICMART)</li>
+                                <li><strong>2024년 9월</strong> - Patients Complaining of Headache with a Combination of Korean Medicine Treatment, Focusing on Acupotomy Treatment: An observational Registry Study (Live Session, ICMART)</li>
+                                <li><strong>2019년 9월</strong> - The Indications and Limitations of Acupotomy Treatment (중부권 학술대회, 대한한의학회)</li>
+                                <li><strong>2018년 10월</strong> - Acupotomy treatment of OPLL (ISAM)</li>
+                                <li><strong>2018년 10월</strong> - Acupotomy treatment of chronic facial palsy (한중 심포지엄, 대한한의학회)</li>
+                                <li><strong>2014년 11월</strong> - Acupotomy treatment of low back pain due to TLJ Syn. (Huanan's Acupotomy society, 중국)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="credentials-list">
+                            <h4>📑 SCI(E)급 학술지 게재 논문</h4>
+                            <ul>
+                                <li><strong>2023년</strong> - 견비통 침도 치료의 효과와 안전성에 관한 다기관 레지스트리 연구 (SCI(E)저널 게재, 대한침도의학회)</li>
+                                <li>침도 치료의 임상 효과에 관한 체계적 문헌 고찰</li>
+                                <li>만성 근골격계 통증 환자에 대한 침도 치료의 유효성 연구</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h3>🌍 글로벌 강의 경력</h3>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-year">2016~현재</div>
+                                <p>미국 LA, San Jose, Virginia 침구사 대상 RSN 침 과정 매년 강의</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-year">2018, 2023, 2024</div>
+                                <p>캐나다 밴쿠버 의료진 대상 침도 치료 초청 강연</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-year">2019</div>
+                                <p>러시아 모스크바 의사 대상 침도 치료 워크숍</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-year">2019</div>
+                                <p>중국 장춘대학교, 곤명대학교 해부학 연수 과정 강의</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-year">2019</div>
+                                <p>Global 한의학 세미나 (폴란드, 영국, 오스트리아, 스웨덴 의사 대상)</p>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-year">2024, 2025</div>
+                                <p>ICMART 국제 학술대회 Live Session 발표</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h3>🎯 전문 진료 분야</h3>
+                        <div class="specialties">
+                            <div class="specialty-badge">
+                                <h4>척추 질환</h4>
+                                <p>목디스크, 허리디스크<br>척추관협착증, OPLL</p>
+                            </div>
+                            <div class="specialty-badge">
+                                <h4>관절 질환</h4>
+                                <p>오십견, 어깨 통증<br>무릎 관절염</p>
+                            </div>
+                            <div class="specialty-badge">
+                                <h4>신경 질환</h4>
+                                <p>만성 두통, 안면마비<br>이명, 삼차신경통</p>
+                            </div>
+                            <div class="specialty-badge">
+                                <h4>만성 통증</h4>
+                                <p>만성 요통, TLJ 증후군<br>근막통증증후군<br>수술후 후유장애</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 구원모 원장 -->
+        <div class="doctor-profile">
+            <div class="doctor-header">
+                <h2>구원모 원장</h2>
+                <p class="doctor-title">한의사</p>
+                <p class="doctor-specialty">침도 치료 | 통증 치료 전문</p>
+            </div>
+            
+            <div class="doctor-content">
+                <div class="doctor-image-section">
+                    <div class="doctor-image-wrapper">
+                        <img src="koo-director.jpg" alt="구원모 원장" class="doctor-image">
+                    </div>
+                    <div class="contact-info">
+                        <p><strong>진료 요일</strong></p>
+                        <p>월, 화, 목, 금, 토</p>
+                        <p style="margin-top: 15px;"><strong>예약 문의</strong></p>
+                        <p>📞 02-2671-7191</p>
+                    </div>
+                </div>
+                
+                <div class="doctor-info-section">
+                    <div class="info-block">
+                        <h3>💼 소개</h3>
+                        <p>
+                            구원모 원장은 대명한의원에서 침도 치료를 전문으로 하는 한의사로, 
+                            류명석 원장의 침도 치료 철학과 기법을 함께 연구하고 발전시켜 나가고 있습니다.
+                        </p>
+                        <p>
+                            정밀한 해부학적 지식을 바탕으로 한 침도 치료를 통해 
+                            만성 통증으로 고생하는 환자들에게 효과적인 치료를 제공하고 있으며, 
+                            환자 중심의 세심한 진료로 높은 만족도를 얻고 있습니다.
+                        </p>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h4>🔬 정밀한 진단과 치료</h4>
+                        <p>
+                            X-ray, 초음파 등 영상 진단 기기를 활용한 정확한 진단을 통해 
+                            환자 개개인의 상태에 맞는 맞춤형 침도 치료를 제공합니다. 
+                            체계적인 치료 계획과 꼼꼼한 사후 관리로 치료 효과를 극대화합니다.
+                        </p>
+                    </div>
+                    
+                    <div class="credentials-list">
+                        <h4>🎓 학력 및 경력</h4>
+                        <ul>
+                            <li>한의과대학 졸업</li>
+                            <li>대명한의원 진료 원장</li>
+                            <li>침도 치료 전문 과정 이수</li>
+                            <li>RSN 침 치료 과정 수료</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="credentials-list">
+                        <h4>🏆 전문 분야</h4>
+                        <ul>
+                            <li>침도를 활용한 근골격계 질환 치료</li>
+                            <li>만성 통증 질환 관리</li>
+                            <li>척추 및 관절 질환 치료</li>
+                            <li>신경 포착 증후군 치료</li>
+                            <li>스포츠 손상 재활</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h3>🎯 주요 진료 분야</h3>
+                        <div class="specialties">
+                            <div class="specialty-badge">
+                                <h4>척추 통증</h4>
+                                <p>목 통증, 허리 통증<br>디스크 질환</p>
+                            </div>
+                            <div class="specialty-badge">
+                                <h4>관절 통증</h4>
+                                <p>어깨 통증, 팔꿈치 통증<br>손목·무릎 통증</p>
+                            </div>
+                            <div class="specialty-badge">
+                                <h4>근육 통증</h4>
+                                <p>근막통증증후군<br>만성 근육통</p>
+                            </div>
+                            <div class="specialty-badge">
+                                <h4>신경 통증</h4>
+                                <p>좌골신경통<br>말초신경 포착증</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-block" style="background: linear-gradient(135deg, #f0f7f0 0%, #e8f4e8 100%); padding: 25px; border-radius: 12px; border-left: 5px solid var(--primary-color);">
+                        <h3 style="border: none; padding: 0; margin-bottom: 15px;">💬 진료 철학</h3>
+                        <p style="font-size: 1.1em; line-height: 1.9; margin: 0;">
+                            "환자의 통증을 정확히 이해하고, 근본 원인을 찾아 해결하는 것이 
+                            진정한 치료입니다. 대명한의원에서는 침도 치료를 통해 최소한의 
+                            침습으로 최대한의 효과를 내는 치료를 추구합니다. 
+                            환자 한 분 한 분에게 정성을 다해 치료하겠습니다."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA 섹션 -->
+    <section style="background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%); color: white; text-align: center; padding: 80px 20px;">
+        <div class="container">
+            <h2 style="font-size: 2.5em; margin-bottom: 20px;">진료 예약 문의</h2>
+            <p style="font-size: 1.3em; margin-bottom: 40px; opacity: 0.95;">
+                전문 의료진이 정확한 진단과 효과적인 치료를 제공합니다
+            </p>
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <a href="tel:02-2671-7191" style="display: inline-block; padding: 15px 40px; background: white; color: #2c5f2d; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 1.1em; transition: all 0.3s ease;">전화 예약 02-2671-7191</a>
+                <a href="index.html" style="display: inline-block; padding: 15px 40px; background: transparent; color: white; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 1.1em; border: 2px solid white; transition: all 0.3s ease;">메인으로 돌아가기</a>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

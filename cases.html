@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>치료 사례 - 대명한의원</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.7;
+            color: #333;
+        }
+        
+        /* 상단 네비게이션은 메인과 동일하게 유지 */
+        nav {
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 20px 0;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #b8762f;
+            text-decoration: none;
+        }
+        
+        .page-header {
+            background: 
+                linear-gradient(135deg, rgba(184, 118, 47, 0.93) 0%, rgba(224, 152, 85, 0.90) 100%),
+                url('treatment-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '✨';
+            position: absolute;
+            font-size: 220px;
+            opacity: 0.06;
+            top: -40px;
+            right: 100px;
+            pointer-events: none;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .section-title {
+            font-size: 2em;
+            color: #b8762f;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        /* 치료 사례 카드 */
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+        
+        .case-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .case-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .case-header {
+            background: linear-gradient(135deg, #b8762f 0%, #c98d4a 100%);
+            color: white;
+            padding: 25px;
+        }
+        
+        .case-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .case-meta {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+        
+        .case-body {
+            padding: 30px;
+        }
+        
+        .case-symptom {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .case-symptom h4 {
+            color: #b8762f;
+            margin-bottom: 10px;
+        }
+        
+        .case-treatment {
+            margin-bottom: 20px;
+        }
+        
+        .case-treatment h4 {
+            color: #b8762f;
+            margin-bottom: 10px;
+        }
+        
+        .case-result {
+            background: #e8f4e8;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #b8762f;
+        }
+        
+        .case-result h4 {
+            color: #b8762f;
+            margin-bottom: 10px;
+        }
+        
+        /* 환자 후기 */
+        .review-section {
+            background: #f8f9fa;
+            padding: 60px 0;
+        }
+        
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .review-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .review-author {
+            font-weight: 600;
+            color: #b8762f;
+        }
+        
+        .review-rating {
+            color: #ffd700;
+            font-size: 1.2em;
+        }
+        
+        .review-condition {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .review-text {
+            line-height: 1.8;
+            color: #333;
+        }
+        
+        .review-date {
+            text-align: right;
+            color: #999;
+            font-size: 0.85em;
+            margin-top: 15px;
+        }
+        
+        /* 로그인 안내 */
+        .login-notice {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+            border: 2px solid #ffd966;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .login-notice h3 {
+            color: #d97706;
+            margin-bottom: 15px;
+        }
+        
+        .login-notice p {
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        
+        .login-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #b8762f;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            background: #c98d4a;
+            transform: translateY(-2px);
+        }
+        
+        /* 통계 요약 */
+        .stats-summary {
+            background: linear-gradient(135deg, #b8762f 0%, #e09855 100%);
+            color: white;
+            padding: 50px 20px;
+            border-radius: 15px;
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            padding: 20px;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .case-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">대명한의원</a>
+            <a href="index.html">← 메인으로</a>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>치료 사례 & 환자 후기</h1>
+        <p>실제 치료 경험을 통해 대명한의원의 전문성을 확인하세요</p>
+    </div>
+
+    <div class="container">
+        <h2 class="section-title">📊 대표 치료 사례</h2>
+        
+        <div class="case-grid">
+            <div class="case-card">
+                <div class="case-header">
+                    <h3 class="case-title">경추 신경근병증 (목디스크)</h3>
+                    <p class="case-meta">50대 남성 | 치료 기간 4주</p>
+                </div>
+                <div class="case-body">
+                    <div class="case-symptom">
+                        <h4>🔍 주요 증상</h4>
+                        <p>• 6개월 이상 지속된 목 통증<br>
+                        • 어깨와 팔로 내려가는 저린 증상<br>
+                        • 손가락 감각 저하<br>
+                        • 야간 통증으로 수면 장애</p>
+                    </div>
+                    
+                    <div class="case-treatment">
+                        <h4>💉 치료 방법</h4>
+                        <p>• X-ray 기반 정밀 진단<br>
+                        • 경추 극간인대 침도 치료<br>
+                        • 주 2회, 총 8회 시술<br>
+                        • 신경 압박 해소 및 유착 박리</p>
+                    </div>
+                    
+                    <div class="case-result">
+                        <h4>✅ 치료 결과</h4>
+                        <p>3회 치료 후 저림 증상 50% 감소<br>
+                        6회 치료 후 통증 80% 완화<br>
+                        8회 치료 완료 후 정상 활동 가능<br>
+                        <strong>VAS 통증 척도: 8점 → 2점</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-header">
+                    <h3 class="case-title">만성 오십견 (동결견)</h3>
+                    <p class="case-meta">60대 여성 | 치료 기간 6주</p>
+                </div>
+                <div class="case-body">
+                    <div class="case-symptom">
+                        <h4>🔍 주요 증상</h4>
+                        <p>• 1년 이상 지속된 어깨 통증<br>
+                        • 관절 가동 범위 50% 이하<br>
+                        • 옷 입고 벗기 어려움<br>
+                        • 타 병원 치료 효과 미비</p>
+                    </div>
+                    
+                    <div class="case-treatment">
+                        <h4>💉 치료 방법</h4>
+                        <p>• 초음파 가이드 침도 시술<br>
+                        • 관절낭 유착 박리<br>
+                        • 주 2회, 총 12회 시술<br>
+                        • 능동 운동 재활 병행</p>
+                    </div>
+                    
+                    <div class="case-result">
+                        <h4>✅ 치료 결과</h4>
+                        <p>4회 치료 후 관절 가동 범위 30% 증가<br>
+                        8회 치료 후 일상생활 불편 해소<br>
+                        12회 치료 완료 후 정상 범위 회복<br>
+                        <strong>ROM: 50° → 160° (외전)</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-header">
+                    <h3 class="case-title">후종인대골화증 (OPLL)</h3>
+                    <p class="case-meta">55세 남성 | 치료 기간 8주</p>
+                </div>
+                <div class="case-body">
+                    <div class="case-symptom">
+                        <h4>🔍 주요 증상</h4>
+                        <p>• MRI상 후종인대골화증 진단<br>
+                        • 보행 시 다리 힘 빠짐<br>
+                        • 손 세밀 동작 장애<br>
+                        • 수술 권유 받았으나 거부</p>
+                    </div>
+                    
+                    <div class="case-treatment">
+                        <h4>💉 치료 방법</h4>
+                        <p>• 경추 주변 근육 침도 치료<br>
+                        • 극간인대 유착 박리<br>
+                        • 주 2회, 총 16회 시술<br>
+                        • 자세 교정 및 운동 치료</p>
+                    </div>
+                    
+                    <div class="case-result">
+                        <h4>✅ 치료 결과</h4>
+                        <p>6회 치료 후 보행 안정성 회복<br>
+                        10회 치료 후 손 기능 정상화<br>
+                        16회 치료 완료 후 수술 회피<br>
+                        <strong>일상생활 복귀 성공</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-header">
+                    <h3 class="case-title">만성 요통 (TLJ 증후군)</h3>
+                    <p class="case-meta">45세 남성 | 치료 기간 5주</p>
+                </div>
+                <div class="case-body">
+                    <div class="case-symptom">
+                        <h4>🔍 주요 증상</h4>
+                        <p>• 3년 이상 지속된 허리 통증<br>
+                        • 앉아있기 30분 이상 불가<br>
+                        • 장시간 운전 불가능<br>
+                        • 다양한 치료 효과 없음</p>
+                    </div>
+                    
+                    <div class="case-treatment">
+                        <h4>💉 치료 방법</h4>
+                        <p>• 흉요추 이행부 침도 치료<br>
+                        • 극간인대 및 극상인대 박리<br>
+                        • 주 2회, 총 10회 시술<br>
+                        • 코어 근육 강화 운동</p>
+                    </div>
+                    
+                    <div class="case-result">
+                        <h4>✅ 치료 결과</h4>
+                        <p>2회 치료 후 앉아있기 시간 증가<br>
+                        5회 치료 후 통증 70% 감소<br>
+                        10회 치료 완료 후 정상 활동 가능<br>
+                        <strong>3년 만에 골프 재개</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-header">
+                    <h3 class="case-title">만성 두통 (긴장성, 경추성)</h3>
+                    <p class="case-meta">35세 여성 | 치료 기간 4주</p>
+                </div>
+                <div class="case-body">
+                    <div class="case-symptom">
+                        <h4>🔍 주요 증상</h4>
+                        <p>• 매일 발생하는 두통 (2년)<br>
+                        • 목 뒷부분 뻐근함<br>
+                        • 진통제 의존성 증가<br>
+                        • 업무 집중력 저하</p>
+                    </div>
+                    
+                    <div class="case-treatment">
+                        <h4>💉 치료 방법</h4>
+                        <p>• 경추 후두하 근육 침도 치료<br>
+                        • 측두근 및 승모근 이완<br>
+                        • 주 2회, 총 8회 시술<br>
+                        • 자세 교정 및 스트레칭 교육</p>
+                    </div>
+                    
+                    <div class="case-result">
+                        <h4>✅ 치료 결과</h4>
+                        <p>3회 치료 후 두통 빈도 50% 감소<br>
+                        6회 치료 후 진통제 중단<br>
+                        8회 치료 완료 후 두통 소실<br>
+                        <strong>2년 만에 두통 없는 생활</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="case-card">
+                <div class="case-header">
+                    <h3 class="case-title">만성 안면마비 (Bell's palsy)</h3>
+                    <p class="case-meta">42세 남성 | 치료 기간 12주</p>
+                </div>
+                <div class="case-body">
+                    <div class="case-symptom">
+                        <h4>🔍 주요 증상</h4>
+                        <p>• 8개월 전 안면마비 발생<br>
+                        • 타 병원 치료 후에도 호전 없음<br>
+                        • 눈 깜빡임 불가<br>
+                        • 입 돌아감, 음식물 흘림</p>
+                    </div>
+                    
+                    <div class="case-treatment">
+                        <h4>💉 치료 방법</h4>
+                        <p>• 안면 근육 침도 치료<br>
+                        • 유착된 조직 박리<br>
+                        • 주 2회, 총 24회 시술<br>
+                        • 안면 근육 재활 운동</p>
+                    </div>
+                    
+                    <div class="case-result">
+                        <h4>✅ 치료 결과</h4>
+                        <p>10회 치료 후 눈 깜빡임 가능<br>
+                        18회 치료 후 입 움직임 정상화<br>
+                        24회 치료 완료 후 90% 회복<br>
+                        <strong>일상생활 및 사회생활 복귀</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-summary">
+            <h2 style="margin-bottom: 20px;">치료 효과 통계</h2>
+            <p style="font-size: 1.1em; margin-bottom: 10px;">실제 환자 데이터 기반 분석 결과</p>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">92%</div>
+                    <div class="stat-label">통증 개선율</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">87%</div>
+                    <div class="stat-label">환자 만족도</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">6-8회</div>
+                    <div class="stat-label">평균 치료 횟수</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3-4주</div>
+                    <div class="stat-label">평균 치료 기간</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="review-section">
+        <div class="container">
+            <h2 class="section-title">💬 실제 환자 후기</h2>
+            
+            <div class="login-notice">
+                <h3>🔒 더 많은 치료 후기를 보시려면 로그인이 필요합니다</h3>
+                <p>
+                    의료법에 따라 상세한 치료 후기와 전후 사진은<br>
+                    로그인 후 확인하실 수 있습니다
+                </p>
+                <a href="#" class="login-btn">카카오톡 로그인</a>
+                <a href="#" class="login-btn">네이버 로그인</a>
+            </div>
+            
+            <div class="review-grid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-author">김○○님</span>
+                        <span class="review-rating">★★★★★</span>
+                    </div>
+                    <div class="review-condition">목디스크 | 50대 남성</div>
+                    <div class="review-text">
+                        다른 병원에서 수술을 권유받았는데, 대명한의원에서 침도 치료로 
+                        호전됐습니다. 원장님의 정확한 진단과 설명이 인상 깊었고, 
+                        치료 효과도 빨라서 만족합니다.
+                    </div>
+                    <div class="review-date">2025.01.15</div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-author">이○○님</span>
+                        <span class="review-rating">★★★★★</span>
+                    </div>
+                    <div class="review-condition">오십견 | 60대 여성</div>
+                    <div class="review-text">
+                        1년 넘게 어깨가 아파서 고생했는데, 침도 치료 받고 많이 좋아졌어요. 
+                        이제 옷도 혼자 입을 수 있고 일상생활이 편해졌습니다. 
+                        감사합니다!
+                    </div>
+                    <div class="review-date">2025.01.10</div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-author">박○○님</span>
+                        <span class="review-rating">★★★★★</span>
+                    </div>
+                    <div class="review-condition">만성 요통 | 40대 남성</div>
+                    <div class="review-text">
+                        몇 년 동안 허리 때문에 고생했는데, 원장님의 정확한 진단과 
+                        침도 치료로 완전히 나았습니다. 골프도 다시 칠 수 있게 됐어요!
+                    </div>
+                    <div class="review-date">2025.01.05</div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-author">최○○님</span>
+                        <span class="review-rating">★★★★★</span>
+                    </div>
+                    <div class="review-condition">두통 | 30대 여성</div>
+                    <div class="review-text">
+                        매일 두통약을 먹었는데, 침도 치료 받고 두통이 거의 없어졌습니다. 
+                        자세 교정과 운동법도 알려주셔서 재발 방지에 도움이 됐어요.
+                    </div>
+                    <div class="review-date">2024.12.28</div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-author">정○○님</span>
+                        <span class="review-rating">★★★★★</span>
+                    </div>
+                    <div class="review-condition">허리디스크 | 50대 여성</div>
+                    <div class="review-text">
+                        처음에는 침도가 무서웠는데, 원장님이 자세히 설명해주시고 
+                        통증도 생각보다 적었어요. 치료 효과는 정말 빠르게 나타났습니다!
+                    </div>
+                    <div class="review-date">2024.12.20</div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-author">강○○님</span>
+                        <span class="review-rating">★★★★★</span>
+                    </div>
+                    <div class="review-condition">팔 저림 | 45세 남성</div>
+                    <div class="review-text">
+                        팔 저림 때문에 밤에 잠도 못 잤는데, 침도 치료 몇 번 받고 
+                        많이 좋아졌습니다. 원장님의 전문성이 느껴졌어요.
+                    </div>
+                    <div class="review-date">2024.12.15</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
