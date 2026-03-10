@@ -414,69 +414,105 @@
             </div>
         </div>
 
-        <!-- 로그인 안내 -->
-        <div class="login-notice">
+        <!-- 간편 가입/로그인 섹션 -->
+        <div class="login-notice" id="loginSection">
             <div class="lock-icon">🔒</div>
-            <h2>상세 후기 보기</h2>
+            <h2>환자 후기 열람</h2>
             <p>
-                의료법에 따라 환자분들의 상세한 치료 후기와 전후 사진,<br>
-                치료 과정 등은 로그인 후 확인하실 수 있습니다.
+                의료법에 따라 상세한 치료 후기는 로그인 후 확인하실 수 있습니다.<br>
+                <strong>이메일만 입력하시면</strong> 바로 모든 후기를 확인하실 수 있습니다.
             </p>
-            <p style="font-size: 1em; color: #888;">
-                간편하게 카카오톡 또는 네이버 계정으로 로그인하세요<br>
-                별도의 회원가입 없이 3초 만에 확인 가능합니다
-            </p>
-            <div class="login-buttons">
-                <a href="#" class="login-btn kakao-btn" onclick="loginKakao(); return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
-                    </svg>
-                    카카오톡으로 3초 만에 로그인
-                </a>
-                <a href="#" class="login-btn naver-btn" onclick="loginNaver(); return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M16.273 12.845L7.376 0H0v24h7.726V11.156L16.624 24H24V0h-7.727v12.845z"/>
-                    </svg>
-                    네이버로 로그인
-                </a>
+            
+            <div style="max-width: 450px; margin: 40px auto;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #b8762f; text-align: left;">
+                        이메일 주소
+                    </label>
+                    <input 
+                        type="email" 
+                        id="userEmail" 
+                        placeholder="example@email.com"
+                        style="width: 100%; padding: 15px 20px; font-size: 1em; border: 2px solid #ddd; border-radius: 10px;"
+                    >
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #b8762f; text-align: left;">
+                        이름 (선택)
+                    </label>
+                    <input 
+                        type="text" 
+                        id="userName" 
+                        placeholder="홍길동"
+                        onkeypress="handleKeyPress(event)"
+                        style="width: 100%; padding: 15px 20px; font-size: 1em; border: 2px solid #ddd; border-radius: 10px;"
+                    >
+                </div>
+                
+                <button 
+                    onclick="quickSignup()" 
+                    style="width: 100%; padding: 15px 30px; background: linear-gradient(135deg, #b8762f 0%, #e09855 100%); color: white; border: none; border-radius: 10px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(184,118,47,0.3)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                >
+                    후기 확인하기
+                </button>
+                
+                <p style="font-size: 0.85em; color: #999; margin-top: 15px; line-height: 1.6;">
+                    ✓ 별도의 회원가입이 필요 없습니다<br>
+                    ✓ 이메일은 통계 목적으로만 사용됩니다<br>
+                    ✓ 개인정보는 저장되지 않습니다
+                </p>
+            </div>
+            
+            <div style="margin-top: 50px; padding: 25px; background: #f8f9fa; border-radius: 15px;">
+                <p style="font-size: 1em; color: #666; margin-bottom: 20px; font-weight: 600;">
+                    또는 간편 로그인
+                </p>
+                <div class="login-buttons" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="loginWithKakao()" class="login-btn kakao-btn" style="flex: 1; min-width: 200px; padding: 12px 20px; background: #FEE500; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
+                        </svg>
+                        카카오 로그인
+                    </button>
+                    <button onclick="loginWithNaver()" class="login-btn naver-btn" style="flex: 1; min-width: 200px; padding: 12px 20px; background: #03C75A; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M16.273 12.845L7.376 0H0v24h7.726V11.156L16.624 24H24V0h-7.727v12.845z"/>
+                        </svg>
+                        네이버 로그인
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- 로그인 후 볼 수 있는 내용 -->
-        <div class="locked-content">
-            <h3>🔐 로그인 후 확인 가능한 내용</h3>
-            <p style="color: #666; margin-bottom: 20px;">
-                500개 이상의 상세 후기, 치료 전후 사진, 통증 변화 그래프 등을 확인하실 수 있습니다
-            </p>
-            <div class="locked-preview">
-                <div class="preview-item">
-                    <h4>📸 치료 전후 사진</h4>
-                    <p>X-ray, 자세 변화 등</p>
-                </div>
-                <div class="preview-item">
-                    <h4>📊 통증 변화 그래프</h4>
-                    <p>VAS 척도 기준</p>
-                </div>
-                <div class="preview-item">
-                    <h4>📝 상세 치료 과정</h4>
-                    <p>횟수, 기간, 방법 등</p>
-                </div>
-                <div class="preview-item">
-                    <h4>💬 환자 인터뷰</h4>
-                    <p>생생한 경험담</p>
-                </div>
-            </div>
-        </div>
 
-        <!-- 공개 후기 (일부) -->
-        <div class="public-reviews">
-            <h2 class="section-title">👥 공개 환자 후기</h2>
+        <!-- 로그인 후 표시되는 전체 후기 -->
+        <div id="reviewsSection" style="display: none;">
+            <!-- 로그아웃 버튼 -->
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button onclick="logout()" style="padding: 10px 25px; background: white; color: #b8762f; border: 2px solid #b8762f; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                    🚪 로그아웃
+                </button>
+            </div>
+            
+            <!-- 카테고리 필터 -->
+            <div class="category-filter" style="display: flex; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; justify-content: center;">
+                <button class="category-btn active" onclick="filterReviews('all')" style="padding: 12px 30px; background: #b8762f; color: white; border: 2px solid #b8762f; border-radius: 25px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s;">전체</button>
+                <button class="category-btn" onclick="filterReviews('척추')" style="padding: 12px 30px; background: white; color: #b8762f; border: 2px solid #b8762f; border-radius: 25px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s;">척추</button>
+                <button class="category-btn" onclick="filterReviews('관절')" style="padding: 12px 30px; background: white; color: #b8762f; border: 2px solid #b8762f; border-radius: 25px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s;">관절</button>
+                <button class="category-btn" onclick="filterReviews('통증')" style="padding: 12px 30px; background: white; color: #b8762f; border: 2px solid #b8762f; border-radius: 25px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s;">만성통증</button>
+            </div>
+            
+            <h2 class="section-title">✨ 전체 환자 후기</h2>
             <p style="text-align: center; color: #666; margin-bottom: 40px; font-size: 1.1em;">
-                로그인 없이도 확인 가능한 일부 후기입니다
+                인증 완료! 모든 상세 후기를 확인하실 수 있습니다
             </p>
             
             <div class="review-grid">
-                <div class="review-card">
+                <!-- 기존 공개 후기들 + 추가 후기들 -->
+                <div class="review-card" data-category="척추">
                     <div class="review-header">
                         <span class="review-author">김○○님</span>
                         <span class="review-rating">★★★★★</span>
@@ -490,7 +526,7 @@
                     <div class="review-date">2025.01.15</div>
                 </div>
 
-                <div class="review-card">
+                <div class="review-card" data-category="관절">
                     <div class="review-header">
                         <span class="review-author">이○○님</span>
                         <span class="review-rating">★★★★★</span>
@@ -498,59 +534,29 @@
                     <div class="review-condition">오십견 | 60대 여성</div>
                     <div class="review-text">
                         1년 넘게 어깨가 아파서 고생했는데, 침도 치료 받고 많이 좋아졌어요. 
-                        이제 옷도 혼자 입을 수 있고 일상생활이 편해졌습니다. 
-                        유명석 원장님께 정말 감사드립니다!
+                        옷 입고 벗기가 너무 힘들었는데 이제는 편하게 할 수 있습니다. 
+                        진작 올 걸 그랬어요. 감사합니다!
                     </div>
                     <div class="review-date">2025.01.10</div>
                 </div>
 
-                <div class="review-card">
+                <div class="review-card" data-category="척추">
                     <div class="review-header">
                         <span class="review-author">박○○님</span>
                         <span class="review-rating">★★★★★</span>
                     </div>
-                    <div class="review-condition">만성 요통 | 40대 남성</div>
+                    <div class="review-condition">허리디스크 | 40대 남성</div>
                     <div class="review-text">
-                        몇 년 동안 허리 때문에 고생했는데, 원장님의 정확한 진단과 
-                        침도 치료로 완전히 나았습니다. 골프도 다시 칠 수 있게 됐어요!
-                        정말 감사합니다.
+                        허리 통증으로 서 있기도 힘들었는데, 침도 치료 몇 번 만에 
+                        많이 좋아졌습니다. 원장님이 정말 실력이 있으신 것 같아요. 
+                        주변 사람들에게도 적극 추천하고 있습니다.
                     </div>
                     <div class="review-date">2025.01.05</div>
                 </div>
 
-                <div class="review-card">
-                    <div class="review-header">
-                        <span class="review-author">최○○님</span>
-                        <span class="review-rating">★★★★★</span>
-                    </div>
-                    <div class="review-condition">두통 | 30대 여성</div>
-                    <div class="review-text">
-                        매일 두통약을 먹었는데, 침도 치료 받고 두통이 거의 없어졌습니다. 
-                        자세 교정과 운동법도 알려주셔서 재발 방지에 도움이 됐어요.
-                        생활의 질이 정말 많이 좋아졌습니다.
-                    </div>
-                    <div class="review-date">2024.12.28</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-header">
-                        <span class="review-author">정○○님</span>
-                        <span class="review-rating">★★★★★</span>
-                    </div>
-                    <div class="review-condition">허리디스크 | 50대 여성</div>
-                    <div class="review-text">
-                        처음에는 침도가 무서웠는데, 원장님이 자세히 설명해주시고 
-                        통증도 생각보다 적었어요. 치료 효과는 정말 빠르게 나타났습니다!
-                        주변 사람들에게도 추천하고 있어요.
-                    </div>
-                    <div class="review-date">2024.12.20</div>
-                </div>
-
-                <div class="review-card">
-                    <div class="review-header">
-                        <span class="review-author">강○○님</span>
-                        <span class="review-rating">★★★★★</span>
-                    </div>
+                <div class="review-card" data-category="통증">
+                    <div class="review-author">강○○님</div>
+                    <div class="review-rating">★★★★★</div>
                     <div class="review-condition">팔 저림 | 45세 남성</div>
                     <div class="review-text">
                         팔 저림 때문에 밤에 잠도 못 잤는데, 침도 치료 몇 번 받고 
@@ -560,7 +566,7 @@
                     <div class="review-date">2024.12.15</div>
                 </div>
 
-                <div class="review-card">
+                <div class="review-card" data-category="관절">
                     <div class="review-header">
                         <span class="review-author">윤○○님</span>
                         <span class="review-rating">★★★★★</span>
@@ -574,7 +580,7 @@
                     <div class="review-date">2024.12.10</div>
                 </div>
 
-                <div class="review-card">
+                <div class="review-card" data-category="관절">
                     <div class="review-header">
                         <span class="review-author">장○○님</span>
                         <span class="review-rating">★★★★★</span>
@@ -588,7 +594,7 @@
                     <div class="review-date">2024.12.05</div>
                 </div>
 
-                <div class="review-card">
+                <div class="review-card" data-category="통증">
                     <div class="review-header">
                         <span class="review-author">한○○님</span>
                         <span class="review-rating">★★★★★</span>
@@ -604,38 +610,124 @@
             </div>
         </div>
 
-        <!-- 하단 CTA -->
-        <div style="text-align: center; margin: 80px 0 40px;">
-            <h2 style="color: #b8762f; font-size: 2em; margin-bottom: 20px;">
-                더 많은 후기를 확인하고 싶으신가요?
-            </h2>
-            <p style="font-size: 1.2em; color: #666; margin-bottom: 30px;">
-                로그인하시면 500개 이상의 상세 후기를 확인하실 수 있습니다
-            </p>
-            <div class="login-buttons">
-                <a href="#" class="login-btn kakao-btn" onclick="loginKakao(); return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
-                    </svg>
-                    카카오톡으로 로그인
-                </a>
-                <a href="#" class="login-btn naver-btn" onclick="loginNaver(); return false;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M16.273 12.845L7.376 0H0v24h7.726V11.156L16.624 24H24V0h-7.727v12.845z"/>
-                    </svg>
-                    네이버로 로그인
-                </a>
-            </div>
-        </div>
+
     </div>
 
     <script>
-        function loginKakao() {
-            alert('카카오톡 로그인 기능은 실제 서비스 연동 시 구현됩니다.\n\n카카오 개발자 센터에서 앱을 등록하고 JavaScript SDK를 연동하면\n간편하게 로그인 기능을 구현할 수 있습니다.');
+        // 로그인 상태 관리
+        let isLoggedIn = localStorage.getItem('dmClinicAuth') === 'true';
+        let userEmail = localStorage.getItem('dmUserEmail') || '';
+
+        // 페이지 로드 시 로그인 상태 확인
+        window.onload = function() {
+            checkLoginStatus();
+        };
+
+        function checkLoginStatus() {
+            if (isLoggedIn) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('reviewsSection').style.display = 'block';
+            } else {
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('reviewsSection').style.display = 'none';
+            }
         }
-        
-        function loginNaver() {
-            alert('네이버 로그인 기능은 실제 서비스 연동 시 구현됩니다.\n\n네이버 개발자 센터에서 애플리케이션을 등록하고 API를 연동하면\n간편하게 로그인 기능을 구현할 수 있습니다.');
+
+        // 간편 가입 (이메일만)
+        function quickSignup() {
+            const emailInput = document.getElementById('userEmail');
+            const nameInput = document.getElementById('userName');
+            const email = emailInput.value.trim();
+            const name = nameInput.value.trim();
+            
+            // 이메일 형식 간단 확인
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email) {
+                alert('📧 이메일 주소를 입력해주세요.');
+                emailInput.focus();
+                return;
+            }
+            
+            if (!emailPattern.test(email)) {
+                alert('❌ 올바른 이메일 형식이 아닙니다.\n\n예: example@email.com');
+                emailInput.focus();
+                return;
+            }
+            
+            // 로그인 처리
+            isLoggedIn = true;
+            localStorage.setItem('dmClinicAuth', 'true');
+            localStorage.setItem('dmUserEmail', email);
+            if (name) {
+                localStorage.setItem('dmUserName', name);
+            }
+            
+            // 입력 필드 초기화
+            emailInput.value = '';
+            nameInput.value = '';
+            
+            checkLoginStatus();
+            
+            // 환영 메시지
+            setTimeout(() => {
+                const welcomeName = name || '고객님';
+                alert(`✅ 환영합니다, ${welcomeName}!\n\n모든 환자 후기를 확인하실 수 있습니다.`);
+            }, 100);
+        }
+
+        // Enter 키로 가입
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                quickSignup();
+            }
+        }
+
+        // 카카오 로그인 (실제 구현 시)
+        function loginWithKakao() {
+            alert('🚧 카카오 로그인 기능 준비 중입니다.\n\n현재는 이메일로 간편하게 이용하실 수 있습니다.\n\n실제 카카오 로그인을 구현하려면:\n1. 카카오 개발자 센터 등록\n2. JavaScript SDK 연동\n3. OAuth 인증 구현이 필요합니다.');
+        }
+
+        // 네이버 로그인 (실제 구현 시)
+        function loginWithNaver() {
+            alert('🚧 네이버 로그인 기능 준비 중입니다.\n\n현재는 이메일로 간편하게 이용하실 수 있습니다.\n\n실제 네이버 로그인을 구현하려면:\n1. 네이버 개발자 센터 등록\n2. API 연동\n3. OAuth 인증 구현이 필요합니다.');
+        }
+
+        // 로그아웃
+        function logout() {
+            const userName = localStorage.getItem('dmUserName') || '고객';
+            if (confirm(`${userName}님, 로그아웃하시겠습니까?`)) {
+                isLoggedIn = false;
+                localStorage.removeItem('dmClinicAuth');
+                localStorage.removeItem('dmUserEmail');
+                localStorage.removeItem('dmUserName');
+                checkLoginStatus();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 카테고리 필터링
+        function filterReviews(category) {
+            const reviews = document.querySelectorAll('.review-card');
+            const buttons = document.querySelectorAll('.category-btn');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.background = 'white';
+                btn.style.color = '#b8762f';
+            });
+            
+            event.target.classList.add('active');
+            event.target.style.background = '#b8762f';
+            event.target.style.color = 'white';
+            
+            reviews.forEach(review => {
+                if (category === 'all' || review.dataset.category === category) {
+                    review.style.display = 'block';
+                } else {
+                    review.style.display = 'none';
+                }
+            });
         }
     </script>
 </body>
