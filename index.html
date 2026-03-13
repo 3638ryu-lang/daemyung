@@ -677,6 +677,167 @@
             opacity: 0.8;
         }
         
+        /* 상담 모달 */
+        .consult-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        .consult-modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .modal-header p {
+            opacity: 0.95;
+            font-size: 1em;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 40px 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(184,118,47,0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .form-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(184,118,47,0.3);
+        }
+        
+        .form-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .form-notice {
+            font-size: 0.9em;
+            color: var(--text-light);
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         /* 반응형 */
         @media (max-width: 968px) {
             .nav-menu {
@@ -764,14 +925,20 @@
     <!-- 히어로 섹션 -->
     <section class="hero">
         <div class="hero-content">
+            <div style="position: relative; display: inline-block; margin-bottom: 20px;">
+                <div style="position: absolute; top: -30px; left: -40px; transform: rotate(-8deg); background: rgba(184,118,47,0.9); color: white; padding: 8px 20px; border-radius: 8px; font-size: 1.2em; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    以針代刀
+                </div>
+                <h1 style="margin-top: 10px;">大明韓醫院</h1>
+            </div>
             <h1>최소한의 손상으로<br>최대한의 치료 효과</h1>
             <p class="hero-tagline">20년 경력 침도 의학 권위자</p>
             <p class="hero-subtitle">
                 대한침도의학회 회장 유명석 원장의<br>
-                만성·난치성 질환 전문 치료
+                <span style="color: #d4af37; font-weight: 700; font-size: 1.15em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">만성·난치성 질환 전문 치료</span>
             </p>
             <div class="hero-buttons">
-                <a href="#contact" class="btn btn-primary">진료 예약하기</a>
+                <button onclick="openConsultModal()" class="btn btn-primary" style="cursor: pointer; border: none;">💬 무료 상담 신청</button>
                 <a href="#acupotomy" class="btn btn-secondary">침도 치료 알아보기</a>
             </div>
         </div>
@@ -788,7 +955,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">👨‍⚕️</div>
                     <h3>한의사를 교육하는 한의사</h3>
-                    <p>매년 한의사 40~60명 대상 교육<br>국내외 의료진 대상 강의 다수<br>침도 치료의 표준을 만들어가는 권위자</p>
+                    <p>매년 수 백명의 한의대생과 한의사들을 대상으로<br>국내외 의료진 대상 강의 다수<br>침도 치료의 표준을 만들어가는 권위자</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🌏</div>
@@ -1212,9 +1379,9 @@
             <div class="footer-section">
                 <h3>바로가기</h3>
                 <ul>
-                    <li><a href="#">네이버 블로그</a></li>
-                    <li><a href="#">유튜브 채널</a></li>
-                    <li><a href="#">구글 비즈니스</a></li>
+                    <li><a href="https://blog.naver.com/3638ryu" target="_blank" rel="noopener noreferrer">네이버 블로그</a></li>
+                    <li><a href="https://www.youtube.com/@---go9kh" target="_blank" rel="noopener noreferrer">유튜브 채널</a></li>
+                    <li><a href="https://share.google/84vdnUAjvRnmrltAC" target="_blank" rel="noopener noreferrer">구글 비즈니스</a></li>
                     <li><a href="#">온라인 예약</a></li>
                 </ul>
             </div>
@@ -1232,4 +1399,135 @@
         });
         
         // 스무스 스크롤
-        document.querySelectorAll('a[hre
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+
+    <!-- 상담 모달 -->
+    <div id="consultModal" class="consult-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💬 무료 의학 상담</h2>
+                <p>현재 겪고 계신 증상을 알려주세요. 전문 상담을 도와드리겠습니다.</p>
+                <button class="modal-close" onclick="closeConsultModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="consultForm" onsubmit="submitConsult(event)">
+                    <div class="form-group">
+                        <label>이름 <span class="required">*</span></label>
+                        <input type="text" name="name" required placeholder="홍길동">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>이메일 <span class="required">*</span></label>
+                        <input type="email" name="email" required placeholder="example@email.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>연락처 (선택)</label>
+                        <input type="tel" name="phone" placeholder="010-1234-5678">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>현재 겪고 계신 증상 및 고충 <span class="required">*</span></label>
+                        <textarea name="symptoms" required placeholder="예: 3개월 전부터 목 통증이 심해졌습니다. 특히 아침에 일어날 때 통증이 심하고, 팔 저림 증상도 동반됩니다..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="form-submit" id="submitBtn">
+                        📤 상담 신청하기
+                    </button>
+                    
+                    <div class="form-notice">
+                        ℹ️ 제출하신 정보는 안전하게 보관되며, 상담 목적으로만 사용됩니다.<br>
+                        📧 입력하신 이메일로 접수 확인 메일이 발송됩니다.<br>
+                        ⏱️ 영업일 기준 24시간 내에 답변드리겠습니다.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 모달 열기/닫기
+        function openConsultModal() {
+            document.getElementById('consultModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeConsultModal() {
+            document.getElementById('consultModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 모달 배경 클릭 시 닫기
+        document.getElementById('consultModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConsultModal();
+            }
+        });
+        
+        // ESC 키로 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConsultModal();
+            }
+        });
+        
+        // 폼 제출 처리
+        async function submitConsult(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = document.getElementById('submitBtn');
+            const formData = new FormData(form);
+            
+            // 데이터 객체 생성
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone') || '미입력',
+                symptoms: formData.get('symptoms'),
+                timestamp: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+            };
+            
+            // 버튼 비활성화
+            submitBtn.disabled = true;
+            submitBtn.textContent = '전송 중...';
+            
+            try {
+                // Google Apps Script Web App URL
+                const scriptURL = 'https://script.google.com/macros/s/AKfycbz1HmW3pY62KfjgwUOCi-MDrzikKYzSQUwtEl-wSqLNZWAO-FbodP0PeLuA0xJRGxk9_A/exec';
+                
+                const response = await fetch(scriptURL, {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('✅ 상담 신청이 완료되었습니다!\n\n입력하신 이메일로 확인 메일이 발송되었습니다.\n24시간 내에 답변드리겠습니다.');
+                    form.reset();
+                    closeConsultModal();
+                } else {
+                    throw new Error('전송 실패');
+                }
+            } catch (error) {
+                alert('❌ 전송 중 오류가 발생했습니다.\n\n다시 시도해주시거나, 전화(02-2671-7191)로 문의해주세요.');
+                console.error('Error:', error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📤 상담 신청하기';
+            }
+        }
+    </script>
+</body>
+</html>
