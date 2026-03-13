@@ -1114,27 +1114,34 @@
                 <div id="map" style="width:100%;height:450px;"></div>
             </div>
             
-            <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8f167b2f05f56acd48780cc0c6f56843"></script>
+            <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8f167b2f05f56acd48780cc0c6f56843"></script>
             <script>
-                var container = document.getElementById('map');
-                var options = {
-                    center: new kakao.maps.LatLng(37.5244, 126.8957),
-                    level: 3
-                };
-                var map = new kakao.maps.Map(container, options);
-                
-                // 마커 표시
-                var markerPosition = new kakao.maps.LatLng(37.5244, 126.8957);
-                var marker = new kakao.maps.Marker({
-                    position: markerPosition
+                // 카카오맵 로드 대기
+                window.addEventListener('load', function() {
+                    if (typeof kakao !== 'undefined' && kakao.maps) {
+                        var container = document.getElementById('map');
+                        var options = {
+                            center: new kakao.maps.LatLng(37.5244, 126.8957),
+                            level: 3
+                        };
+                        var map = new kakao.maps.Map(container, options);
+                        
+                        // 마커 표시
+                        var markerPosition = new kakao.maps.LatLng(37.5244, 126.8957);
+                        var marker = new kakao.maps.Marker({
+                            position: markerPosition
+                        });
+                        marker.setMap(map);
+                        
+                        // 인포윈도우 표시
+                        var infowindow = new kakao.maps.InfoWindow({
+                            content: '<div style="padding:5px;font-size:12px;"><strong>대명한의원</strong><br>서울 영등포구 양평로 105<br>원우빌딩 3층</div>'
+                        });
+                        infowindow.open(map, marker);
+                    } else {
+                        console.error('카카오맵 로드 실패. 카카오 디벨로퍼에서 도메인 등록을 확인하세요.');
+                    }
                 });
-                marker.setMap(map);
-                
-                // 인포윈도우 표시
-                var infowindow = new kakao.maps.InfoWindow({
-                    content: '<div style="padding:5px;font-size:12px;"><strong>대명한의원</strong><br>서울 영등포구 양평로 105<br>원우빌딩 3층</div>'
-                });
-                infowindow.open(map, marker);
             </script>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-bottom: 40px; text-align: left;">
