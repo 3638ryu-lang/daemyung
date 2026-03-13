@@ -1133,9 +1133,9 @@
                         });
                         marker.setMap(map);
                         
-                        // 인포윈도우 표시
+                        // 인포윈도우 표시 (더 크고 눈에 띄게)
                         var infowindow = new kakao.maps.InfoWindow({
-                            content: '<div style="padding:5px;font-size:12px;"><strong>대명한의원</strong><br>서울 영등포구 양평로 105<br>원우빌딩 3층</div>'
+                            content: '<div style="padding:15px;font-size:14px;min-width:200px;text-align:center;"><strong style="font-size:16px;color:#b8762f;">대명한의원</strong><br><span style="color:#333;">서울 영등포구 양평로 105</span><br><span style="color:#666;">원우빌딩 3층</span></div>'
                         });
                         infowindow.open(map, marker);
                         
