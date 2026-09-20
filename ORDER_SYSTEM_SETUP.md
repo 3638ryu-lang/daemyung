@@ -19,6 +19,9 @@
 2. 기존에 있던 코드(`function myFunction() {}` 등)를 모두 지우고, 아래 코드를 붙여넣습니다.
 
 ```javascript
+// 주문이 들어왔을 때 알림 메일을 받을 주소입니다. 원하는 이메일로 바꿔주세요.
+var ADMIN_EMAIL = '3638ryu@naver.com';
+
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
 
@@ -28,8 +31,10 @@ function doPost(e) {
   }
 
   var p = e.parameter;
+  var orderTime = new Date();
+
   sheet.appendRow([
-    new Date(),
+    orderTime,
     p.name || '',
     p.phone || '',
     p.deliveryMethod || '',
@@ -39,12 +44,30 @@ function doPost(e) {
     p.memo || ''
   ]);
 
+  // 주문이 접수될 때마다 관리자 이메일로 알림을 보냅니다.
+  var total = Number(p.total || 0);
+  var subject = '[대명한의원] 새 주문이 접수되었습니다 - ' + (p.name || '주문자');
+  var body =
+    '새로운 제품 주문이 접수되었습니다.\n\n' +
+    '주문일시: ' + orderTime.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + '\n' +
+    '이름: ' + (p.name || '') + '\n' +
+    '연락처: ' + (p.phone || '') + '\n' +
+    '수령방법: ' + (p.deliveryMethod || '') + '\n' +
+    '주소: ' + (p.address || '-') + '\n' +
+    '주문상품: ' + (p.items || '') + '\n' +
+    '총 정산 금액: ' + total.toLocaleString('ko-KR') + '원\n' +
+    '요청사항: ' + (p.memo || '-') + '\n\n' +
+    '전체 주문 내역은 구글 스프레드시트에서 확인하세요.';
+
+  MailApp.sendEmail(ADMIN_EMAIL, subject, body);
+
   return ContentService.createTextOutput(JSON.stringify({ result: 'success' }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 ```
 
-3. 상단의 **저장** (디스크 모양 아이콘)을 눌러 저장합니다.
+3. 코드 맨 위의 `ADMIN_EMAIL` 값을 주문 알림을 받고 싶은 실제 이메일 주소로 바꿔주세요.
+4. 상단의 **저장** (디스크 모양 아이콘)을 눌러 저장합니다.
 
 ## 3단계. 웹 앱으로 배포하기
 
@@ -79,8 +102,10 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 ## 5단계. 테스트해보기
 
 1. `products.html` 페이지에서 아무 제품이나 담고, 이름/연락처를 입력한 뒤 "주문하기"를 눌러봅니다.
-2. "주문이 접수되었습니다" 안내창이 뜨면 정상 작동한 것입니다.
+2. "주문이 접수되었습니다" 안내창과 함께 담은 제품 목록·총 정산 금액이 표시되면 정상 작동한 것입니다.
 3. 1단계에서 만든 구글 스프레드시트를 열어 새 줄이 추가되었는지 확인합니다.
+4. `ADMIN_EMAIL`로 설정한 메일함을 확인해서 "새 주문이 접수되었습니다" 알림 메일이 왔는지 확인합니다.
+   (메일이 곧바로 오지 않으면 스팸함도 확인해주세요.)
 
 ---
 
@@ -88,6 +113,11 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 
 - 이 방식은 **결제(카드 결제 등)는 처리하지 않고, 주문 내용만 접수/기록**합니다.
   실제 결제나 배송 안내는 스프레드시트를 확인한 후 전화 등으로 직접 진행해주세요.
+- 주문이 접수되면 화면에 **담은 제품과 총 결제 예정 금액이 자동으로 계산되어 주문자에게 즉시 안내**됩니다.
+  (실제 결제는 이 금액을 기준으로 전화 등으로 안내해주시면 됩니다.)
+- 주문이 들어올 때마다 `ADMIN_EMAIL`로 설정한 주소로 주문 내용이 담긴 알림 메일이 자동으로 발송됩니다.
+- 페이지 상단의 **"🔗 주문 페이지 링크 복사"** 버튼을 누르면 현재 페이지 주소가 복사됩니다.
+  이 링크를 카카오톡, 문자 등으로 고객에게 보내면 고객이 바로 접속해서 주문할 수 있습니다.
 - Apps Script 코드를 수정한 뒤에는 **배포 → 배포 관리 → 수정(연필 아이콘) → 새 버전으로 배포**를 해야
   변경사항이 실제 웹 앱에 반영됩니다.
 - 판매하는 제품 목록(이름/가격/설명)은 `products.html` 파일 안의 `PRODUCTS` 배열에서 직접 수정할 수 있습니다.

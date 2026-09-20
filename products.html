@@ -134,6 +134,25 @@
             opacity: 0.95;
         }
 
+        .btn-copy-link {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 30px;
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-copy-link:hover {
+            background: #fff3e0;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -430,6 +449,27 @@
             cursor: pointer;
         }
 
+        .receipt {
+            background: var(--bg-light);
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.95em;
+            line-height: 1.9;
+        }
+
+        .receipt .receipt-total {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--primary-color);
+            border-top: 1px solid #ddd;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
         @media (max-width: 768px) {
             .nav-menu {
                 display: none;
@@ -485,6 +525,7 @@
     <div class="page-header">
         <h1>🛍️ 제품 주문</h1>
         <p>대명한의원이 추천하는 건강 관리 제품을 간편하게 주문하세요</p>
+        <button type="button" class="btn-copy-link" onclick="copyOrderLink()">🔗 주문 페이지 링크 복사</button>
     </div>
 
     <div class="container">
@@ -539,6 +580,7 @@
         <div class="modal-box">
             <div class="icon">✅</div>
             <h3>주문이 접수되었습니다</h3>
+            <div class="receipt" id="receiptDetail"></div>
             <p>확인 후 입력하신 연락처로 안내드리겠습니다.<br>이용해 주셔서 감사합니다.</p>
             <button class="modal-close" onclick="closeModal()">확인</button>
         </div>
@@ -683,11 +725,27 @@
             formData.append('total', total);
             formData.append('memo', memo);
 
+            // 주문자에게 보여줄 정산 내역(영수증)을 미리 만들어둡니다.
+            const itemsHtml = entries.map(([id, qty]) => {
+                const product = PRODUCTS.find(p => p.id === Number(id));
+                return `${product.name} x ${qty}개 = ${(product.price * qty).toLocaleString()}원`;
+            }).join('<br>');
+
+            const receiptHtml = `
+                <strong>${name} 님의 주문 내역</strong><br>
+                ${itemsHtml}
+                <div class="receipt-total">
+                    <span>총 결제 예정 금액</span>
+                    <span>${total.toLocaleString()}원</span>
+                </div>
+            `;
+
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: formData
             }).finally(() => {
+                document.getElementById('receiptDetail').innerHTML = receiptHtml;
                 openModal();
                 Object.keys(cart).forEach(key => delete cart[key]);
                 renderCart();
@@ -702,6 +760,21 @@
 
         function closeModal() {
             document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        function copyOrderLink() {
+            const url = window.location.href;
+            const message = '주문 페이지 링크가 복사되었습니다.\n카카오톡, 문자 등으로 고객에게 전달해보세요.\n\n' + url;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert(message);
+                }).catch(() => {
+                    prompt('아래 링크를 복사해서 사용하세요.', url);
+                });
+            } else {
+                prompt('아래 링크를 복사해서 사용하세요.', url);
+            }
         }
 
         renderProducts();
