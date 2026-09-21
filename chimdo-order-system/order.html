@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>침도 주문하기</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <h1 id="site-title">침도 주문관리 시스템</h1>
+  <nav>
+    <a href="order.html" class="active">주문하기</a>
+    <a href="admin.html">관리자</a>
+  </nav>
+</header>
+
+<div class="container" style="max-width:640px;">
+
+  <div id="msg-area"></div>
+
+  <div class="card">
+    <h2>침도 주문서</h2>
+    <h3>회원이신 경우와 비회원이신 경우 입력 방법이 다릅니다.</h3>
+
+    <div class="field">
+      <label>주문 구분</label>
+      <div class="toggle-group">
+        <button type="button" id="btn-member" class="active">회원 주문</button>
+        <button type="button" id="btn-guest">비회원 주문</button>
+      </div>
+      <div class="field-hint">회원: 등록된 거래처만 선택해서 빠르게 주문 / 비회원: 정보를 직접 입력해서 주문</div>
+    </div>
+
+    <!-- 회원 주문 영역 -->
+    <div id="member-area">
+      <div class="field">
+        <label>거래처 선택 *</label>
+        <select id="member-select"></select>
+        <div class="field-hint" id="member-select-hint">거래처 목록을 불러오는 중입니다...</div>
+      </div>
+    </div>
+
+    <!-- 비회원 주문 영역 -->
+    <div id="guest-area" class="hidden">
+      <div class="field">
+        <label>이름 / 담당자명 *</label>
+        <input type="text" id="guest-name" placeholder="예: 홍길동">
+      </div>
+      <div class="field">
+        <label>병원/업체명</label>
+        <input type="text" id="guest-business" placeholder="예: OO한의원">
+      </div>
+      <div class="field">
+        <label>연락처 *</label>
+        <input type="tel" id="guest-phone" placeholder="예: 010-1234-5678">
+      </div>
+      <div class="field">
+        <label>이메일</label>
+        <input type="email" id="guest-email" placeholder="선택 입력">
+      </div>
+      <div class="field">
+        <label>배송 주소</label>
+        <input type="text" id="guest-address" placeholder="배송받으실 주소">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>주문 제품</h2>
+    <div id="items-container"></div>
+    <button type="button" class="btn secondary small" id="btn-add-item">+ 제품 추가</button>
+  </div>
+
+  <div class="card">
+    <h2>요청 사항</h2>
+    <div class="field">
+      <textarea id="memo" placeholder="배송 요청 사항 등을 남겨주세요 (선택)"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <span class="text-muted">예상 결제 금액</span>
+      <strong id="total-amount" style="font-size:1.3rem;">0원</strong>
+    </div>
+    <button type="button" class="btn" id="btn-submit" style="width:100%;">주문 접수하기</button>
+  </div>
+
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/order.js"></script>
+</body>
+</html>

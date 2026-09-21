@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>침도 주문관리 - 관리자</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- 로그인 화면 -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box card">
+    <h2 id="login-title">관리자 로그인</h2>
+    <div id="login-msg"></div>
+    <div class="field">
+      <label>비밀번호</label>
+      <input type="password" id="login-password" placeholder="관리자 비밀번호">
+    </div>
+    <button type="button" class="btn" id="btn-login" style="width:100%;">로그인</button>
+    <p class="field-hint">초기 비밀번호는 설치 시 Google Sheets의 Config 탭에서 설정합니다.</p>
+  </div>
+</div>
+
+<!-- 관리자 메인 화면 -->
+<div id="admin-app" class="hidden">
+  <header class="app-header">
+    <h1 id="site-title">침도 주문관리 시스템</h1>
+    <nav>
+      <a href="order.html">주문 페이지</a>
+      <a href="#" id="btn-logout">로그아웃</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div id="global-msg"></div>
+
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-tab="orders">주문 관리</button>
+      <button type="button" class="tab-btn" data-tab="inventory">재고 관리</button>
+      <button type="button" class="tab-btn" data-tab="customers">거래처 관리</button>
+      <button type="button" class="tab-btn" data-tab="stats">매출·기부금 통계</button>
+    </div>
+
+    <!-- 주문 관리 -->
+    <section id="tab-orders" class="tab-panel">
+      <div class="card">
+        <h2>주문 목록</h2>
+        <div class="filter-bar">
+          <div class="field">
+            <label>상태</label>
+            <select id="order-filter-status">
+              <option value="">전체</option>
+              <option value="접수">접수</option>
+              <option value="확인중">확인중</option>
+              <option value="배송중">배송중</option>
+              <option value="완료">완료</option>
+              <option value="취소">취소</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>구분</label>
+            <select id="order-filter-type">
+              <option value="">전체</option>
+              <option value="회원">회원</option>
+              <option value="비회원">비회원</option>
+            </select>
+          </div>
+          <button type="button" class="btn secondary" id="btn-refresh-orders">새로고침</button>
+        </div>
+        <div id="orders-table-wrap"></div>
+      </div>
+    </section>
+
+    <!-- 재고 관리 -->
+    <section id="tab-inventory" class="tab-panel hidden">
+      <div class="card">
+        <h2>제품 등록 / 수정</h2>
+        <input type="hidden" id="product-id">
+        <div class="filter-bar">
+          <div class="field"><label>제품명 *</label><input type="text" id="product-name" placeholder="예: 침도 3호"></div>
+          <div class="field"><label>규격</label><input type="text" id="product-spec" placeholder="예: 1box=10개입"></div>
+          <div class="field"><label>박스당 가격 *</label><input type="number" id="product-price" placeholder="0"></div>
+          <div class="field"><label>현재 재고(박스)</label><input type="number" id="product-stock" placeholder="0"></div>
+          <div class="field"><label>박스당 기부금</label><input type="number" id="product-donation" placeholder="0"></div>
+        </div>
+        <button type="button" class="btn" id="btn-save-product">저장</button>
+        <button type="button" class="btn secondary hidden" id="btn-cancel-edit-product">수정 취소</button>
+      </div>
+
+      <div class="card">
+        <h2>제품 목록</h2>
+        <div id="products-table-wrap"></div>
+      </div>
+    </section>
+
+    <!-- 거래처 관리 -->
+    <section id="tab-customers" class="tab-panel hidden">
+      <div class="card">
+        <h2>거래처 등록 / 수정</h2>
+        <input type="hidden" id="customer-id">
+        <div class="filter-bar">
+          <div class="field">
+            <label>구분 *</label>
+            <select id="customer-type"><option value="회원">회원</option><option value="비회원">비회원</option></select>
+          </div>
+          <div class="field"><label>이름 *</label><input type="text" id="customer-name"></div>
+          <div class="field"><label>병원/업체명</label><input type="text" id="customer-business"></div>
+          <div class="field"><label>연락처</label><input type="tel" id="customer-phone"></div>
+          <div class="field"><label>이메일</label><input type="email" id="customer-email"></div>
+          <div class="field"><label>주소</label><input type="text" id="customer-address"></div>
+        </div>
+        <div class="field"><label>메모</label><textarea id="customer-note"></textarea></div>
+        <button type="button" class="btn" id="btn-save-customer">저장</button>
+        <button type="button" class="btn secondary hidden" id="btn-cancel-edit-customer">수정 취소</button>
+      </div>
+
+      <div class="card">
+        <h2>거래처 목록</h2>
+        <div class="filter-bar">
+          <div class="field">
+            <label>구분 필터</label>
+            <select id="customer-filter-type">
+              <option value="">전체</option>
+              <option value="회원">회원</option>
+              <option value="비회원">비회원</option>
+            </select>
+          </div>
+          <button type="button" class="btn secondary" id="btn-refresh-customers">새로고침</button>
+        </div>
+        <div id="customers-table-wrap"></div>
+      </div>
+    </section>
+
+    <!-- 매출 / 통계 -->
+    <section id="tab-stats" class="tab-panel hidden">
+      <div class="card">
+        <h2>기간별 매출 · 학회 기부금</h2>
+        <div class="filter-bar">
+          <div class="field"><label>시작일</label><input type="date" id="stats-from"></div>
+          <div class="field"><label>종료일</label><input type="date" id="stats-to"></div>
+          <button type="button" class="btn" id="btn-load-stats">조회</button>
+        </div>
+        <div class="field-hint" style="margin-bottom:16px;">※ 취소된 주문은 매출/기부금 집계에서 자동으로 제외됩니다.</div>
+
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">총 주문 건수</div><div class="value" id="stat-orders">-</div></div>
+          <div class="stat-tile"><div class="label">총 판매 박스 수</div><div class="value" id="stat-boxes">-</div></div>
+          <div class="stat-tile highlight"><div class="label">총 매출</div><div class="value" id="stat-sales">-</div></div>
+          <div class="stat-tile highlight"><div class="label" id="stat-donation-label">학회 기부금</div><div class="value" id="stat-donation">-</div></div>
+        </div>
+
+        <h3>거래처 구분별 매출</h3>
+        <div id="stats-by-type-wrap" style="margin-bottom:20px;"></div>
+
+        <h3>제품별 판매 현황 (박스당 기부금 계산 포함)</h3>
+        <div id="stats-by-product-wrap"></div>
+      </div>
+
+      <div class="card">
+        <h2>기부금 계산 기준 설정</h2>
+        <div class="field-hint" style="margin-bottom:12px;">제품별 "박스당 기부금" 금액은 재고 관리 탭에서 제품마다 설정할 수 있습니다. 학회 이름은 여기서 설정하세요.</div>
+        <div class="filter-bar">
+          <div class="field"><label>학회(기부 대상) 이름</label><input type="text" id="config-association-name" placeholder="예: OO학회"></div>
+          <button type="button" class="btn secondary" id="btn-save-config">저장</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>

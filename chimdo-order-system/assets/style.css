@@ -1,0 +1,238 @@
+/* 침도 주문관리 시스템 - 공용 스타일
+   * 이 시스템은 다른 병원/사이트 디자인과 무관한 독립된 화면입니다. */
+
+:root {
+  --color-bg: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-border: #e1e5ea;
+  --color-text: #1f2933;
+  --color-text-muted: #6b7280;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #d97706;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+
+.app-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-header h1 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.app-header nav a {
+  margin-left: 16px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+.app-header nav a.active,
+.app-header nav a:hover { color: var(--color-primary); }
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.05rem;
+}
+
+.card h3 {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin: 0 0 12px;
+}
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+.field-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--color-text);
+  font-family: inherit;
+}
+textarea { resize: vertical; min-height: 70px; }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { background: var(--color-primary-dark); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.secondary { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+.btn.secondary:hover { background: #f0f2f5; }
+.btn.danger { background: var(--color-danger); }
+.btn.small { padding: 6px 12px; font-size: 0.82rem; }
+
+.toggle-group { display: flex; gap: 8px; }
+.toggle-group button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.toggle-group button.active {
+  border-color: var(--color-primary);
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--color-primary);
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+th { color: var(--color-text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.02em; }
+tr:last-child td { border-bottom: none; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.badge.status-접수 { background: #e0e7ff; color: #4338ca; }
+.badge.status-확인중 { background: #fef3c7; color: #b45309; }
+.badge.status-배송중 { background: #dbeafe; color: #1d4ed8; }
+.badge.status-완료 { background: #dcfce7; color: #15803d; }
+.badge.status-취소 { background: #fee2e2; color: #b91c1c; }
+.badge.type-회원 { background: #ede9fe; color: #6d28d9; }
+.badge.type-비회원 { background: #f3f4f6; color: #4b5563; }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.stat-tile .label { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 6px; }
+.stat-tile .value { font-size: 1.4rem; font-weight: 700; }
+.stat-tile.highlight { border-color: var(--color-primary); background: rgba(37, 99, 235, 0.05); }
+.stat-tile.highlight .value { color: var(--color-primary); }
+
+.item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.msg { padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 14px; }
+.msg.error { background: #fee2e2; color: #b91c1c; }
+.msg.success { background: #dcfce7; color: #15803d; }
+
+.empty-state { text-align: center; color: var(--color-text-muted); padding: 32px 0; font-size: 0.9rem; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border); margin-bottom: 20px; }
+.tabs button {
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabs button.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
+.filter-bar .field { margin-bottom: 0; min-width: 140px; }
+
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-box { width: 100%; max-width: 360px; }
+
+.text-muted { color: var(--color-text-muted); }
+.text-right { text-align: right; }
+.mt-0 { margin-top: 0; }
+.hidden { display: none !important; }
