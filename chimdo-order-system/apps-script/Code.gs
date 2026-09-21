@@ -1,5 +1,5 @@
 /**
- * 침도 주문/판매 관리 시스템 - 백엔드 (Google Apps Script)
+ * 한국침도교육원 침도 주문/판매 관리 시스템 - 백엔드 (Google Apps Script)
  *
  * 이 파일은 Google Sheets에 연결된 Apps Script 프로젝트에 붙여넣어 사용합니다.
  * 자세한 설치 방법은 상위 폴더의 README.md 를 참고하세요.
@@ -84,7 +84,7 @@ function doGet(e) {
   try {
     var action = e.parameter.action;
     if (!action) {
-      return jsonOutput_({ ok: true, message: '침도 주문관리 시스템 API가 정상 동작 중입니다.' });
+      return jsonOutput_({ ok: true, message: '한국침도교육원 침도 주문관리 시스템 API가 정상 동작 중입니다.' });
     }
     var payload = e.parameter.payload ? JSON.parse(e.parameter.payload) : {};
     return jsonOutput_(routeAction_(action, payload));
