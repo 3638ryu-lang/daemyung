@@ -112,12 +112,17 @@
 
     document.getElementById('btn-load-stats').addEventListener('click', loadStats);
     document.getElementById('btn-save-config').addEventListener('click', saveConfig);
+    document.getElementById('btn-open-statement').addEventListener('click', openStatement);
 
-    // 이번 달 1일 ~ 오늘로 통계 기본 기간 설정
+    loadStatementCustomerOptions();
+
+    // 이번 달 1일 ~ 오늘로 통계/정산서 기본 기간 설정
     var today = new Date();
     var firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     document.getElementById('stats-from').value = firstOfMonth.toISOString().slice(0, 10);
     document.getElementById('stats-to').value = today.toISOString().slice(0, 10);
+    document.getElementById('statement-from').value = firstOfMonth.toISOString().slice(0, 10);
+    document.getElementById('statement-to').value = today.toISOString().slice(0, 10);
     loadStats();
   }
 
@@ -144,13 +149,20 @@
           return '<option value="' + s + '"' + (s === o.Status ? ' selected' : '') + '>' + s + '</option>';
         }).join('');
 
+        var deducted = o.StockDeducted === true;
+
         return (
           '<tr>' +
             '<td>' + formatDate(o.Timestamp) + '<br><span class="text-muted">' + escapeHtml(o.OrderID) + '</span></td>' +
             '<td><span class="badge type-' + o.CustomerType + '">' + o.CustomerType + '</span><br>' + escapeHtml(o.CustomerName) + (o.BusinessName ? '<br><span class="text-muted">' + escapeHtml(o.BusinessName) + '</span>' : '') + '<br><span class="text-muted">' + escapeHtml(o.Phone) + '</span></td>' +
             '<td>' + itemsText + '</td>' +
             '<td class="text-right">' + formatWon(o.TotalAmount) + '<br><span class="text-muted">기부금 ' + formatWon(o.DonationAmount) + '</span></td>' +
-            '<td><select class="order-status-select" data-order-id="' + o.OrderID + '">' + statusOptions + '</select></td>' +
+            '<td>' +
+              '<select class="order-status-select" data-order-id="' + o.OrderID + '" data-deducted="' + deducted + '">' + statusOptions + '</select>' +
+              (deducted
+                ? '<div class="text-muted" style="margin-top:4px;">✔ 출고완료 (재고 차감됨)</div>'
+                : '<div class="text-muted" style="margin-top:4px;">출고 전 (재고 미차감)</div>') +
+            '</td>' +
           '</tr>'
         );
       }).join('');
@@ -161,14 +173,23 @@
         sel.addEventListener('change', function () {
           var orderId = sel.dataset.orderId;
           var newStatus = sel.value;
-          if (newStatus === '취소' && !confirm('주문을 취소 처리하시겠습니까? 재고가 자동으로 복원됩니다.')) {
+          var wasDeducted = sel.dataset.deducted === 'true';
+          var isShippedStatus = newStatus === '배송중' || newStatus === '완료';
+
+          if (newStatus === '취소' && !confirm('주문을 취소 처리하시겠습니까? 이미 출고된 주문이라면 재고가 자동으로 복원됩니다.')) {
+            loadOrders();
+            return;
+          }
+          if (isShippedStatus && !wasDeducted && !confirm('"' + newStatus + '"(으)로 변경하면 이 시점에 재고가 차감됩니다 (출고 처리). 계속할까요?')) {
             loadOrders();
             return;
           }
           callAdmin('updateOrderStatus', { orderId: orderId, status: newStatus }).then(function (r) {
             if (!r.ok) { showGlobalMsg(r.error, 'error'); loadOrders(); return; }
             showGlobalMsg('주문 상태가 변경되었습니다.', 'success');
+            loadOrders();
             loadProducts();
+            loadStats(); // 출고/취소로 재고가 바뀌면 매출·기부금 집계도 즉시 갱신합니다.
           });
         });
       });
@@ -336,7 +357,37 @@
       showGlobalMsg('거래처가 저장되었습니다.', 'success');
       resetCustomerForm();
       loadCustomers();
+      loadStatementCustomerOptions();
     });
+  }
+
+  // ================= 거래처별 정산서 =================
+  function loadStatementCustomerOptions() {
+    callAdmin('listCustomers', {}).then(function (res) {
+      if (!res.ok) return;
+      var sel = document.getElementById('statement-customer');
+      var previousValue = sel.value;
+      if (!res.customers.length) {
+        sel.innerHTML = '<option value="">등록된 거래처가 없습니다</option>';
+        return;
+      }
+      sel.innerHTML = res.customers.map(function (c) {
+        return '<option value="' + c.CustomerID + '">[' + c.Type + '] ' + escapeHtml(c.Name) + (c.BusinessName ? ' (' + escapeHtml(c.BusinessName) + ')' : '') + '</option>';
+      }).join('');
+      if (previousValue) sel.value = previousValue;
+    });
+  }
+
+  function openStatement() {
+    var customerId = document.getElementById('statement-customer').value;
+    var from = document.getElementById('statement-from').value;
+    var to = document.getElementById('statement-to').value;
+
+    if (!customerId) { showGlobalMsg('정산서를 발급할 거래처를 선택해주세요.', 'error'); return; }
+    if (!from || !to) { showGlobalMsg('정산 기간(시작일/종료일)을 선택해주세요.', 'error'); return; }
+
+    var url = 'statement.html?customerId=' + encodeURIComponent(customerId) + '&from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to);
+    window.open(url, '_blank');
   }
 
   // ================= 매출 / 통계 / 기부금 =================

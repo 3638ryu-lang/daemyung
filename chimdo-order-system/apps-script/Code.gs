@@ -13,6 +13,10 @@
  *
  * 이 스크립트를 처음 사용할 때는 Apps Script 편집기에서
  * initializeSheets 함수를 한 번 실행해서 시트와 기본값을 자동으로 만드세요.
+ *
+ * [재고 차감 시점] 재고는 "주문 접수 시점"이 아니라 "출고 시점"(주문 상태를
+ * 배송중 또는 완료로 변경하는 시점)에 차감됩니다. Orders 시트의 StockDeducted
+ * 열이 해당 주문의 재고가 이미 차감되었는지를 내부적으로 추적합니다.
  */
 
 // ---------- 공통 설정 ----------
@@ -27,10 +31,12 @@ var SHEET_NAMES = {
 
 var PRODUCT_HEADERS = ['ProductID', 'ProductName', 'Spec', 'UnitPrice', 'StockBoxes', 'DonationPerBox', 'Active'];
 var CUSTOMER_HEADERS = ['CustomerID', 'Type', 'Name', 'BusinessName', 'Phone', 'Email', 'Address', 'JoinDate', 'Note'];
-var ORDER_HEADERS = ['OrderID', 'Timestamp', 'CustomerType', 'CustomerID', 'CustomerName', 'BusinessName', 'Phone', 'Email', 'Address', 'Status', 'TotalAmount', 'DonationAmount', 'Memo'];
+var ORDER_HEADERS = ['OrderID', 'Timestamp', 'CustomerType', 'CustomerID', 'CustomerName', 'BusinessName', 'Phone', 'Email', 'Address', 'Status', 'TotalAmount', 'DonationAmount', 'Memo', 'StockDeducted'];
 var ORDER_ITEM_HEADERS = ['OrderID', 'ProductID', 'ProductName', 'BoxQty', 'UnitPrice', 'LineTotal', 'DonationPerBox', 'LineDonation'];
 
 var ORDER_STATUSES = ['접수', '확인중', '배송중', '완료', '취소'];
+// 이 상태가 되는 순간 실제로 "출고"된 것으로 간주하고, 그 시점에 재고를 차감합니다.
+var SHIPPED_STATUSES = ['배송중', '완료'];
 var SESSION_HOURS = 8;
 
 // ---------- 초기 설치용 함수 (Apps Script 편집기에서 한 번만 직접 실행) ----------
@@ -136,6 +142,7 @@ function routeAction_(action, payload) {
     case 'adjustStock': return adjustStock_(payload);
 
     case 'getStats': return getStats_(payload);
+    case 'getCustomerStatement': return getCustomerStatement_(payload);
     case 'getConfig': return getConfigForAdmin_();
     case 'updateConfig': return updateConfig_(payload);
 
@@ -335,7 +342,18 @@ function upsertCustomer_(payload) {
 
 function findOrCreateGuestCustomer_(guestInfo) {
   // 비회원 주문 시, 이력 추적을 위해 Customers 시트에 '비회원' 타입으로 자동 기록합니다.
+  // 같은 연락처로 재주문하면 새로 만들지 않고 기존 비회원 거래처를 그대로 재사용합니다.
+  // (거래처별 정산서를 뽑을 때 같은 사람의 주문이 하나로 모이도록 하기 위함)
   var sheet = getSheet_(SHEET_NAMES.CUSTOMERS);
+
+  if (guestInfo.phone) {
+    var rows = sheetToObjects_(sheet);
+    var existing = rows.filter(function (c) {
+      return c.Type === '비회원' && c.Phone && String(c.Phone) === String(guestInfo.phone);
+    })[0];
+    if (existing) return existing.CustomerID;
+  }
+
   var newId = generateId_('G');
   sheet.appendRow([
     newId,
@@ -392,16 +410,14 @@ function createOrder_(payload) {
   var productMap = {};
   products.forEach(function (p) { productMap[p.ProductID] = p; });
 
-  // 재고 확인 (하나라도 부족하면 전체 주문을 생성하지 않음)
+  // 이 시점에는 재고를 차감하지 않습니다 (재고 차감은 "출고" 처리 시점에 일어납니다).
+  // 다만 존재하지 않는 제품이나 잘못된 수량은 미리 걸러냅니다.
   for (var i = 0; i < items.length; i++) {
     var it = items[i];
     var product = productMap[it.productId];
     if (!product) return { ok: false, error: '존재하지 않는 제품입니다: ' + it.productId };
     var qty = Number(it.boxQty) || 0;
     if (qty <= 0) return { ok: false, error: '수량은 1박스 이상이어야 합니다.' };
-    if (Number(product.StockBoxes) < qty) {
-      return { ok: false, error: product.ProductName + '의 재고가 부족합니다. (현재 재고: ' + product.StockBoxes + '박스)' };
-    }
   }
 
   var orderId = generateId_('O');
@@ -421,12 +437,6 @@ function createOrder_(payload) {
     totalDonation += lineDonation;
 
     orderItemRows.push([orderId, product.ProductID, product.ProductName, qty, unitPrice, lineTotal, donationPerBox, lineDonation]);
-
-    // 재고 차감
-    var rowIndex = findRowIndexById_(productSheet, 'ProductID', product.ProductID);
-    var stockCol = PRODUCT_HEADERS.indexOf('StockBoxes') + 1;
-    var currentStock = Number(productSheet.getRange(rowIndex, stockCol).getValue());
-    productSheet.getRange(rowIndex, stockCol).setValue(currentStock - qty);
   });
 
   getSheet_(SHEET_NAMES.ORDERS).appendRow([
@@ -442,7 +452,8 @@ function createOrder_(payload) {
     '접수',
     totalAmount,
     totalDonation,
-    payload.memo || ''
+    payload.memo || '',
+    false
   ]);
 
   var itemSheet = getSheet_(SHEET_NAMES.ORDER_ITEMS);
@@ -478,14 +489,56 @@ function updateOrderStatus_(payload) {
   if (ORDER_STATUSES.indexOf(payload.status) === -1) return { ok: false, error: '올바르지 않은 상태값입니다.' };
 
   var statusCol = ORDER_HEADERS.indexOf('Status') + 1;
-  var currentStatus = sheet.getRange(rowIndex, statusCol).getValue();
+  var deductedCol = ORDER_HEADERS.indexOf('StockDeducted') + 1;
+  var wasDeducted = sheet.getRange(rowIndex, deductedCol).getValue() === true;
+  var newStatus = payload.status;
 
-  // 취소로 변경할 때만 재고를 복원 (중복 복원 방지)
-  if (payload.status === '취소' && currentStatus !== '취소') {
+  if (newStatus === '취소') {
+    // 이미 출고(재고 차감)된 주문을 취소하는 경우에만 재고를 복원합니다.
+    if (wasDeducted) {
+      restoreStockForOrder_(payload.orderId);
+      sheet.getRange(rowIndex, deductedCol).setValue(false);
+    }
+  } else if (SHIPPED_STATUSES.indexOf(newStatus) !== -1 && !wasDeducted) {
+    // 배송중/완료로 처음 바뀌는 시점 = 출고 시점: 이때 실제로 재고를 차감합니다.
+    var deductResult = deductStockForOrder_(payload.orderId);
+    if (!deductResult.ok) return deductResult;
+    sheet.getRange(rowIndex, deductedCol).setValue(true);
+  } else if (SHIPPED_STATUSES.indexOf(newStatus) === -1 && wasDeducted) {
+    // 이미 출고 처리된 주문을 출고 이전 상태(접수/확인중)로 되돌리는 경우 재고를 복원합니다.
     restoreStockForOrder_(payload.orderId);
+    sheet.getRange(rowIndex, deductedCol).setValue(false);
   }
 
-  sheet.getRange(rowIndex, statusCol).setValue(payload.status);
+  sheet.getRange(rowIndex, statusCol).setValue(newStatus);
+  return { ok: true };
+}
+
+function deductStockForOrder_(orderId) {
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.ORDER_ITEMS)).filter(function (it) { return it.OrderID === orderId; });
+  var productSheet = getSheet_(SHEET_NAMES.PRODUCTS);
+  var stockCol = PRODUCT_HEADERS.indexOf('StockBoxes') + 1;
+
+  // 하나라도 재고가 부족하면 전체 출고 처리를 하지 않습니다 (부분 출고 방지).
+  for (var i = 0; i < items.length; i++) {
+    var rowIndex = findRowIndexById_(productSheet, 'ProductID', items[i].ProductID);
+    if (rowIndex === -1) continue;
+    var currentStock = Number(productSheet.getRange(rowIndex, stockCol).getValue());
+    if (currentStock < Number(items[i].BoxQty)) {
+      return {
+        ok: false,
+        error: items[i].ProductName + '의 재고가 부족하여 출고 처리할 수 없습니다. (현재 재고: ' + currentStock + '박스, 필요 수량: ' + items[i].BoxQty + '박스)'
+      };
+    }
+  }
+
+  items.forEach(function (it) {
+    var rowIndex = findRowIndexById_(productSheet, 'ProductID', it.ProductID);
+    if (rowIndex === -1) return;
+    var currentStock = Number(productSheet.getRange(rowIndex, stockCol).getValue());
+    productSheet.getRange(rowIndex, stockCol).setValue(currentStock - Number(it.BoxQty));
+  });
+
   return { ok: true };
 }
 
@@ -512,9 +565,11 @@ function getStats_(payload) {
   var to = payload.to ? new Date(payload.to) : null;
   if (to) to.setHours(23, 59, 59, 999);
 
-  // 취소된 주문은 매출/기부금 집계에서 제외
+  // 실제로 출고(재고 차감)된 주문만 매출/기부금으로 집계합니다.
+  // (접수/확인중 상태는 아직 출고 전이라 매출로 잡지 않고, 취소된 주문은 출고 여부와
+  //  무관하게 취소 처리 시 StockDeducted가 false로 복구되므로 자동으로 제외됩니다.)
   orders = orders.filter(function (o) {
-    if (o.Status === '취소') return false;
+    if (o.StockDeducted !== true) return false;
     var ts = new Date(o.Timestamp);
     if (from && ts < from) return false;
     if (to && ts > to) return false;
@@ -560,6 +615,52 @@ function getStats_(payload) {
       associationName: config.AssociationName || '대한침도도의학회',
       byProduct: Object.keys(byProduct).map(function (k) { return byProduct[k]; }),
       byCustomerType: byCustomerType
+    }
+  };
+}
+
+// ---------- 거래처별 정산서 ----------
+
+function getCustomerStatement_(payload) {
+  var customers = sheetToObjects_(getSheet_(SHEET_NAMES.CUSTOMERS));
+  var customer = customers.filter(function (c) { return String(c.CustomerID) === String(payload.customerId); })[0];
+  if (!customer) return { ok: false, error: '거래처를 찾을 수 없습니다.' };
+
+  var from = payload.from ? new Date(payload.from) : null;
+  var to = payload.to ? new Date(payload.to) : null;
+  if (to) to.setHours(23, 59, 59, 999);
+
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.ORDER_ITEMS));
+
+  // 정산서는 실제로 출고된(=재고가 차감된) 주문만 대상으로 합니다.
+  var orders = sheetToObjects_(getSheet_(SHEET_NAMES.ORDERS)).filter(function (o) {
+    if (String(o.CustomerID) !== String(payload.customerId)) return false;
+    if (o.StockDeducted !== true) return false;
+    var ts = new Date(o.Timestamp);
+    if (from && ts < from) return false;
+    if (to && ts > to) return false;
+    return true;
+  });
+
+  orders.sort(function (a, b) { return new Date(a.Timestamp) - new Date(b.Timestamp); });
+
+  var grandTotal = 0;
+  var totalBoxes = 0;
+  orders.forEach(function (o) {
+    o.items = items.filter(function (it) { return it.OrderID === o.OrderID; });
+    grandTotal += Number(o.TotalAmount) || 0;
+    o.items.forEach(function (it) { totalBoxes += Number(it.BoxQty) || 0; });
+  });
+
+  return {
+    ok: true,
+    statement: {
+      customer: customer,
+      from: payload.from || '',
+      to: payload.to || '',
+      orders: orders,
+      grandTotal: grandTotal,
+      totalBoxes: totalBoxes
     }
   };
 }

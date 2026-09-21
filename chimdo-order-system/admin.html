@@ -130,6 +130,23 @@
         </div>
         <div id="customers-table-wrap"></div>
       </div>
+
+      <div class="card">
+        <h2>거래처별 정산서 발급</h2>
+        <div class="field-hint" style="margin-bottom:12px;">
+          선택한 거래처의 지정 기간 동안 <strong>실제 출고된</strong> 주문을 정리해 새 창으로 엽니다.
+          새 창에서 "인쇄 / PDF로 저장" 버튼을 누르면 브라우저 인쇄 기능으로 PDF 파일을 저장할 수 있습니다.
+        </div>
+        <div class="filter-bar">
+          <div class="field">
+            <label>거래처 선택</label>
+            <select id="statement-customer"></select>
+          </div>
+          <div class="field"><label>시작일</label><input type="date" id="statement-from"></div>
+          <div class="field"><label>종료일</label><input type="date" id="statement-to"></div>
+          <button type="button" class="btn" id="btn-open-statement">정산서 보기 / 인쇄</button>
+        </div>
+      </div>
     </section>
 
     <!-- 매출 / 통계 -->
