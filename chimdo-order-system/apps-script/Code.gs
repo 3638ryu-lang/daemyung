@@ -49,7 +49,7 @@ function initializeSheets() {
 
   var defaults = [
     ['AdminPassword', 'changeme123'],
-    ['AssociationName', '학회'],
+    ['AssociationName', '대한침도도의학회'],
     ['DefaultDonationPerBox', '1000']
   ];
   defaults.forEach(function (pair) {
@@ -557,7 +557,7 @@ function getStats_(payload) {
       totalBoxes: totalBoxes,
       totalSales: totalSales,
       totalDonation: totalDonation,
-      associationName: config.AssociationName || '학회',
+      associationName: config.AssociationName || '대한침도도의학회',
       byProduct: Object.keys(byProduct).map(function (k) { return byProduct[k]; }),
       byCustomerType: byCustomerType
     }
