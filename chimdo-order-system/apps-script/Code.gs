@@ -53,8 +53,9 @@ var ORDER_ITEM_HEADERS = ['OrderID', 'ProductID', 'ProductName', 'BoxQty', 'Unit
 var DISTRIBUTOR_HEADERS = ['DistributorID', 'Name', 'ContactName', 'Phone', 'Email', 'Address', 'JoinDate', 'Note'];
 var B2B_ORDER_HEADERS = ['OrderID', 'Timestamp', 'DistributorID', 'DistributorName', 'ResoldTo', 'Status', 'TotalAmount', 'DonationAmount', 'Memo', 'StockDeducted'];
 var B2B_ORDER_ITEM_HEADERS = ['OrderID', 'ProductID', 'ProductName', 'BoxQty', 'UnitPrice', 'LineTotal', 'DonationPerBox', 'LineDonation'];
-// 워니리스트가 공급받은 제품을 최종적으로 넘기는 재판매처 (참고 기록용 — 청구 대상이 바뀌지는 않습니다)
-var RESOLD_TO_OPTIONS = ['워니리스트 자체', '안진메디팜', '이메디샾', '인티그레이션', '기타'];
+// 워니리스트로 나가는 제품은 그 즉시 아래 세 곳 중 하나로 바로 출고되는 구조이므로,
+// "최종 재판매처"는 이 셋 중에서만 고르도록 합니다 (참고 기록용 — 청구 대상이 바뀌지는 않습니다)
+var RESOLD_TO_OPTIONS = ['안진메디팜', '이메디샾', '인티그레이션'];
 
 var ORDER_STATUSES = ['접수', '확인중', '배송중', '완료', '취소'];
 // 이 상태가 되는 순간 실제로 "출고"된 것으로 간주하고, 그 시점에 재고를 차감합니다.

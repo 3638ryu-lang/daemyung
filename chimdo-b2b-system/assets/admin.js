@@ -419,7 +419,13 @@
     var orderSel = document.getElementById('order-distributor');
     var prevOrderVal = orderSel.value;
     orderSel.innerHTML = optionsHtml || '<option value="">등록된 거래처가 없습니다</option>';
-    if (prevOrderVal) orderSel.value = prevOrderVal;
+    if (prevOrderVal) {
+      orderSel.value = prevOrderVal;
+    } else {
+      // 새 주문 입력 시 매번 거래처를 고를 필요 없도록, "워니리스트"를 기본 선택해둡니다.
+      var defaultDistributor = distributors.filter(function (d) { return d.Name === '워니리스트'; })[0];
+      if (defaultDistributor) orderSel.value = defaultDistributor.DistributorID;
+    }
 
     var stmtSel = document.getElementById('statement-distributor');
     var prevStmtVal = stmtSel.value;
