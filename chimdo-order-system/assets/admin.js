@@ -213,8 +213,8 @@
             '<td class="text-right">' + (lowStock ? '<span class="badge status-취소">' + p.StockBoxes + '박스 (부족)</span>' : p.StockBoxes + '박스') + '</td>' +
             '<td class="text-right">' + formatWon(p.DonationPerBox) + '/박스</td>' +
             '<td>' +
-              '<button type="button" class="btn secondary small stock-adjust" data-id="' + p.ProductID + '" data-delta="10">+10</button> ' +
-              '<button type="button" class="btn secondary small stock-adjust" data-id="' + p.ProductID + '" data-delta="-10">-10</button> ' +
+              '<button type="button" class="btn secondary small stock-adjust" data-id="' + p.ProductID + '" data-delta="1">+1</button> ' +
+              '<button type="button" class="btn secondary small stock-adjust" data-id="' + p.ProductID + '" data-delta="-1">-1</button> ' +
               '<button type="button" class="btn secondary small product-edit" data-id="' + p.ProductID + '">수정</button>' +
             '</td>' +
           '</tr>'
