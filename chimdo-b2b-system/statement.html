@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정산서</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body { background: #f4f6f8; }
+
+  .statement-toolbar {
+    max-width: 720px;
+    margin: 16px auto 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .statement-sheet {
+    max-width: 720px;
+    margin: 16px auto 40px;
+    background: #ffffff;
+    padding: 40px;
+    border: 1px solid #e1e5ea;
+    color: #111827;
+  }
+
+  .statement-header { text-align: center; margin-bottom: 28px; }
+  .statement-header h1 { font-size: 1.7rem; margin: 0 0 6px; letter-spacing: 6px; }
+  .statement-header .period { color: #4b5563; font-size: 0.9rem; }
+
+  .statement-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .statement-meta .label { color: #6b7280; font-size: 0.76rem; margin-bottom: 2px; }
+
+  table.statement-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  table.statement-table th,
+  table.statement-table td { border: 1px solid #d1d5db; padding: 8px 10px; }
+  table.statement-table th { background: #f4f6f8; }
+  table.statement-table td.num,
+  table.statement-table th.num { text-align: right; }
+  .statement-total-row td { font-weight: 700; background: #f9fafb; }
+
+  .statement-footer { margin-top: 32px; text-align: right; font-size: 0.85rem; color: #6b7280; }
+  .empty-state { text-align: center; padding: 60px 0; color: #6b7280; }
+
+  @media print {
+    .statement-toolbar { display: none; }
+    body { background: #fff; }
+    .statement-sheet { border: none; margin: 0; padding: 0; max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="statement-toolbar">
+  <button type="button" class="btn secondary" onclick="window.close()">닫기</button>
+  <button type="button" class="btn" onclick="window.print()">인쇄 / PDF로 저장</button>
+</div>
+
+<div id="statement-root" class="statement-sheet">
+  <div class="empty-state">불러오는 중...</div>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/statement.js"></script>
+</body>
+</html>

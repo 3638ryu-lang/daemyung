@@ -4,19 +4,30 @@
  * 이 파일은 Google Sheets에 연결된 Apps Script 프로젝트에 붙여넣어 사용합니다.
  * 자세한 설치 방법은 상위 폴더의 README.md 를 참고하세요.
  *
- * 시트 구성 (한 스프레드시트 안에 아래 5개의 탭이 필요합니다):
- *   Products     - 제품(재고) 정보
- *   Customers    - 거래처(회원/비회원) 정보
- *   Orders       - 주문 정보 (주문 1건 = 1행)
- *   OrderItems   - 주문에 포함된 제품별 상세 (주문 1건에 여러 제품 가능)
- *   Config       - 관리자 비밀번호 등 설정값
+ * 이 백엔드 하나가 B2C(한의원 대상 소매)와 B2B(도매상 대상 도매) 두 프로그램을
+ * 함께 지원합니다. 두 프로그램은 화면(웹페이지)은 완전히 분리되어 있지만,
+ * **재고(Products 시트의 StockBoxes)는 하나로 공유**합니다 — B2C 소매 판매와
+ * B2B(워니리스트) 공급이 같은 실물 재고에서 함께 차감되어야 하기 때문입니다.
+ *
+ * 시트 구성 (한 스프레드시트 안에 아래 8개의 탭이 필요합니다):
+ *   Products      - 제품(재고) 정보 (B2C/B2B 공용, 회원가/비회원가/도매가를 함께 관리)
+ *   Customers     - B2C 거래처(회원/비회원) 정보
+ *   Orders        - B2C 주문 정보 (주문 1건 = 1행)
+ *   OrderItems    - B2C 주문에 포함된 제품별 상세
+ *   Distributors  - B2B 거래처(도매상, 예: 워니리스트) 정보
+ *   B2BOrders     - B2B 주문 정보 (주문 1건 = 1행)
+ *   B2BOrderItems - B2B 주문에 포함된 제품별 상세
+ *   Config        - 관리자 비밀번호 등 설정값
  *
  * 이 스크립트를 처음 사용할 때는 Apps Script 편집기에서
  * initializeSheets 함수를 한 번 실행해서 시트와 기본값을 자동으로 만드세요.
+ * (이미 B2C만 쓰고 있었다면, 이 함수를 다시 실행해도 안전합니다 — 기존 B2C 시트는
+ * 그대로 두고 B2B에 필요한 시트만 새로 추가합니다.)
  *
  * [재고 차감 시점] 재고는 "주문 접수 시점"이 아니라 "출고 시점"(주문 상태를
- * 배송중 또는 완료로 변경하는 시점)에 차감됩니다. Orders 시트의 StockDeducted
- * 열이 해당 주문의 재고가 이미 차감되었는지를 내부적으로 추적합니다.
+ * 배송중 또는 완료로 변경하는 시점)에 차감됩니다. B2C의 Orders 시트와 B2B의
+ * B2BOrders 시트 모두 StockDeducted 열로 이미 출고(차감) 처리되었는지를 추적하며,
+ * 어느 쪽에서 차감하든 동일한 Products.StockBoxes 값이 줄어듭니다.
  */
 
 // ---------- 공통 설정 ----------
@@ -26,13 +37,24 @@ var SHEET_NAMES = {
   CUSTOMERS: 'Customers',
   ORDERS: 'Orders',
   ORDER_ITEMS: 'OrderItems',
+  DISTRIBUTORS: 'Distributors',
+  B2B_ORDERS: 'B2BOrders',
+  B2B_ORDER_ITEMS: 'B2BOrderItems',
   CONFIG: 'Config'
 };
 
-var PRODUCT_HEADERS = ['ProductID', 'ProductName', 'Spec', 'MemberPrice', 'GuestPrice', 'StockBoxes', 'DonationPerBox', 'Active'];
+// ProductID/ProductName/Spec은 B2C/B2B 공용이며, StockBoxes(재고)도 하나로 공유됩니다.
+// MemberPrice/GuestPrice는 B2C 전용, WholesalePrice는 B2B(도매) 전용 가격입니다.
+var PRODUCT_HEADERS = ['ProductID', 'ProductName', 'Spec', 'MemberPrice', 'GuestPrice', 'StockBoxes', 'DonationPerBox', 'Active', 'WholesalePrice'];
 var CUSTOMER_HEADERS = ['CustomerID', 'Type', 'Name', 'BusinessName', 'Phone', 'Email', 'Address', 'JoinDate', 'Note'];
 var ORDER_HEADERS = ['OrderID', 'Timestamp', 'CustomerType', 'CustomerID', 'CustomerName', 'BusinessName', 'Phone', 'Email', 'Address', 'Status', 'TotalAmount', 'DonationAmount', 'Memo', 'StockDeducted'];
 var ORDER_ITEM_HEADERS = ['OrderID', 'ProductID', 'ProductName', 'BoxQty', 'UnitPrice', 'LineTotal', 'DonationPerBox', 'LineDonation'];
+
+var DISTRIBUTOR_HEADERS = ['DistributorID', 'Name', 'ContactName', 'Phone', 'Email', 'Address', 'JoinDate', 'Note'];
+var B2B_ORDER_HEADERS = ['OrderID', 'Timestamp', 'DistributorID', 'DistributorName', 'ResoldTo', 'Status', 'TotalAmount', 'DonationAmount', 'Memo', 'StockDeducted'];
+var B2B_ORDER_ITEM_HEADERS = ['OrderID', 'ProductID', 'ProductName', 'BoxQty', 'UnitPrice', 'LineTotal', 'DonationPerBox', 'LineDonation'];
+// 워니리스트가 공급받은 제품을 최종적으로 넘기는 재판매처 (참고 기록용 — 청구 대상이 바뀌지는 않습니다)
+var RESOLD_TO_OPTIONS = ['워니리스트 자체', '안진메디팜', '이메디샾', '인티그레이션', '기타'];
 
 var ORDER_STATUSES = ['접수', '확인중', '배송중', '완료', '취소'];
 // 이 상태가 되는 순간 실제로 "출고"된 것으로 간주하고, 그 시점에 재고를 차감합니다.
@@ -48,6 +70,9 @@ function initializeSheets() {
   ensureSheetWithHeaders_(ss, SHEET_NAMES.CUSTOMERS, CUSTOMER_HEADERS);
   ensureSheetWithHeaders_(ss, SHEET_NAMES.ORDERS, ORDER_HEADERS);
   ensureSheetWithHeaders_(ss, SHEET_NAMES.ORDER_ITEMS, ORDER_ITEM_HEADERS);
+  ensureSheetWithHeaders_(ss, SHEET_NAMES.DISTRIBUTORS, DISTRIBUTOR_HEADERS);
+  ensureSheetWithHeaders_(ss, SHEET_NAMES.B2B_ORDERS, B2B_ORDER_HEADERS);
+  ensureSheetWithHeaders_(ss, SHEET_NAMES.B2B_ORDER_ITEMS, B2B_ORDER_ITEM_HEADERS);
 
   var configSheet = ensureSheetWithHeaders_(ss, SHEET_NAMES.CONFIG, ['Key', 'Value']);
   var configRows = sheetToObjects_(configSheet);
@@ -66,11 +91,25 @@ function initializeSheets() {
 
   var productSheet = ss.getSheetByName(SHEET_NAMES.PRODUCTS);
   if (productSheet.getLastRow() < 2) {
-    // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active
-    productSheet.appendRow(['P001', '침도 (예시 제품)', '1box=10개입', 45000, 50000, 100, 1000, true]);
+    // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active, WholesalePrice(도매가)
+    productSheet.appendRow(['P001', '침도 (예시 제품)', '1box=10개입', 45000, 50000, 100, 1000, true, 40000]);
   }
 
-  Logger.log('초기화 완료. Config 시트에서 AdminPassword를 꼭 변경하세요.');
+  var distributorSheet = ss.getSheetByName(SHEET_NAMES.DISTRIBUTORS);
+  if (distributorSheet.getLastRow() < 2) {
+    distributorSheet.appendRow([
+      'D001',
+      '워니리스트',
+      '',
+      '',
+      '',
+      '',
+      Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd'),
+      '하위 재판매처: 안진메디팜, 이메디샾, 인티그레이션 (직접 청구 대상 아님, 참고용)'
+    ]);
+  }
+
+  Logger.log('초기화 완료. Config 시트에서 AdminPassword를 꼭 변경하세요. Products 시트에 WholesalePrice(도매가) 열도 확인해주세요.');
 }
 
 /**
@@ -95,10 +134,10 @@ function setupRealProducts() {
   sheet.appendRow(PRODUCT_HEADERS);
   sheet.setFrozenRows(1);
 
-  // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active
+  // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active, WholesalePrice(도매가)
   var codes = ['3540', '4030', '4040', '5060', '6050', '6075', '5040', '8080'];
   codes.forEach(function (code) {
-    sheet.appendRow([code, code, '1box=50개입', 21000, 23000, 0, 1000, true]);
+    sheet.appendRow([code, code, '1box=50개입', 21000, 23000, 0, 1000, true, 0]);
   });
 
   Logger.log('실제 판매 제품 8종(' + codes.join(', ') + ')으로 Products 시트를 새로 설정했습니다. 재고 수량은 관리자 페이지에서 실제 값으로 수정해주세요.');
@@ -177,6 +216,18 @@ function routeAction_(action, payload) {
     case 'getCustomerStatement': return getCustomerStatement_(payload);
     case 'getConfig': return getConfigForAdmin_();
     case 'updateConfig': return updateConfig_(payload);
+
+    // ---- B2B(도매) 전용 action — B2C와 같은 백엔드/재고를 공유하지만 화면은 별도입니다 ----
+    case 'listDistributors': return listDistributors_();
+    case 'upsertDistributor': return upsertDistributor_(payload);
+
+    case 'createB2BOrder': return createB2BOrder_(payload);
+    case 'listB2BOrders': return listB2BOrders_(payload);
+    case 'updateB2BOrderStatus': return updateB2BOrderStatus_(payload);
+
+    case 'getB2BStats': return getB2BStats_(payload);
+    case 'getDistributorStatement': return getDistributorStatement_(payload);
+    case 'getResoldToOptions': return { ok: true, options: RESOLD_TO_OPTIONS };
 
     default: return { ok: false, error: '알 수 없는 action: ' + action };
   }
@@ -317,7 +368,8 @@ function upsertProduct_(payload) {
       Number(p.GuestPrice) || 0,
       Number(p.StockBoxes) || 0,
       Number(p.DonationPerBox) || 0,
-      p.Active === false ? false : true
+      p.Active === false ? false : true,
+      Number(p.WholesalePrice) || 0
     ]);
     return { ok: true, productId: newId };
   }
@@ -549,8 +601,9 @@ function updateOrderStatus_(payload) {
   return { ok: true };
 }
 
-function deductStockForOrder_(orderId) {
-  var items = sheetToObjects_(getSheet_(SHEET_NAMES.ORDER_ITEMS)).filter(function (it) { return it.OrderID === orderId; });
+// 아래 두 함수는 B2C(OrderItems)와 B2B(B2BOrderItems) 양쪽에서 공용으로 사용합니다.
+// 항상 같은 Products.StockBoxes 값을 차감/복원하므로, 판매 경로와 무관하게 재고가 하나로 유지됩니다.
+function deductStockForItems_(items) {
   var productSheet = getSheet_(SHEET_NAMES.PRODUCTS);
   var stockCol = PRODUCT_HEADERS.indexOf('StockBoxes') + 1;
 
@@ -577,8 +630,7 @@ function deductStockForOrder_(orderId) {
   return { ok: true };
 }
 
-function restoreStockForOrder_(orderId) {
-  var items = sheetToObjects_(getSheet_(SHEET_NAMES.ORDER_ITEMS)).filter(function (it) { return it.OrderID === orderId; });
+function restoreStockForItems_(items) {
   var productSheet = getSheet_(SHEET_NAMES.PRODUCTS);
   var stockCol = PRODUCT_HEADERS.indexOf('StockBoxes') + 1;
 
@@ -588,6 +640,26 @@ function restoreStockForOrder_(orderId) {
     var currentStock = Number(productSheet.getRange(rowIndex, stockCol).getValue());
     productSheet.getRange(rowIndex, stockCol).setValue(currentStock + Number(it.BoxQty));
   });
+}
+
+function deductStockForOrder_(orderId) {
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.ORDER_ITEMS)).filter(function (it) { return it.OrderID === orderId; });
+  return deductStockForItems_(items);
+}
+
+function restoreStockForOrder_(orderId) {
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.ORDER_ITEMS)).filter(function (it) { return it.OrderID === orderId; });
+  restoreStockForItems_(items);
+}
+
+function deductStockForB2BOrder_(orderId) {
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDER_ITEMS)).filter(function (it) { return it.OrderID === orderId; });
+  return deductStockForItems_(items);
+}
+
+function restoreStockForB2BOrder_(orderId) {
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDER_ITEMS)).filter(function (it) { return it.OrderID === orderId; });
+  restoreStockForItems_(items);
 }
 
 // ---------- 매출 / 통계 / 학회 기부금 ----------
@@ -691,6 +763,268 @@ function getCustomerStatement_(payload) {
     ok: true,
     statement: {
       customer: customer,
+      from: payload.from || '',
+      to: payload.to || '',
+      orders: orders,
+      grandTotal: grandTotal,
+      totalBoxes: totalBoxes
+    }
+  };
+}
+
+// ================================================================
+// ==================== B2B(도매) 전용 함수 ====================
+// ================================================================
+// 화면(admin.html)은 B2C와 완전히 분리되어 있지만, 아래 함수들은
+// 위의 B2C 함수들과 같은 SHEET_NAMES.PRODUCTS(재고)를 공유해서 읽고 씁니다.
+// 이 시스템은 완전 내부용(관리자 전용)이라, 아래 action들도 전부 관리자
+// 로그인(token)을 필요로 합니다 — routeAction_의 PUBLIC_ACTIONS에 없기 때문입니다.
+
+// ---------- B2B 거래처(도매상) ----------
+
+function listDistributors_() {
+  var rows = sheetToObjects_(getSheet_(SHEET_NAMES.DISTRIBUTORS));
+  return { ok: true, distributors: rows };
+}
+
+function upsertDistributor_(payload) {
+  var d = payload.distributor || {};
+  var sheet = getSheet_(SHEET_NAMES.DISTRIBUTORS);
+
+  if (d.DistributorID) {
+    var rowIndex = findRowIndexById_(sheet, 'DistributorID', d.DistributorID);
+    if (rowIndex === -1) return { ok: false, error: '거래처를 찾을 수 없습니다.' };
+    var rowValues = DISTRIBUTOR_HEADERS.map(function (h) {
+      return h in d ? d[h] : sheet.getRange(rowIndex, DISTRIBUTOR_HEADERS.indexOf(h) + 1).getValue();
+    });
+    sheet.getRange(rowIndex, 1, 1, DISTRIBUTOR_HEADERS.length).setValues([rowValues]);
+    return { ok: true, distributorId: d.DistributorID };
+  } else {
+    var newId = generateId_('D');
+    sheet.appendRow([
+      newId,
+      d.Name || '',
+      d.ContactName || '',
+      d.Phone || '',
+      d.Email || '',
+      d.Address || '',
+      Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Seoul', 'yyyy-MM-dd'),
+      d.Note || ''
+    ]);
+    return { ok: true, distributorId: newId };
+  }
+}
+
+// ---------- B2B 주문 (관리자가 전화/메일로 받은 주문을 직접 입력) ----------
+
+function createB2BOrder_(payload) {
+  var items = payload.items || [];
+  if (!items.length) return { ok: false, error: '주문할 제품을 1개 이상 선택해주세요.' };
+  if (!payload.distributorId) return { ok: false, error: '거래처를 선택해주세요.' };
+
+  var distributors = sheetToObjects_(getSheet_(SHEET_NAMES.DISTRIBUTORS));
+  var distributor = distributors.filter(function (d) { return String(d.DistributorID) === String(payload.distributorId); })[0];
+  if (!distributor) return { ok: false, error: '선택한 거래처를 찾을 수 없습니다.' };
+
+  var products = sheetToObjects_(getSheet_(SHEET_NAMES.PRODUCTS));
+  var productMap = {};
+  products.forEach(function (p) { productMap[p.ProductID] = p; });
+
+  // 이 시점에는 재고를 차감하지 않습니다 (재고 차감은 "출고" 처리 시점에 일어나며,
+  // B2C와 같은 Products.StockBoxes를 함께 사용합니다).
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    var product = productMap[it.productId];
+    if (!product) return { ok: false, error: '존재하지 않는 제품입니다: ' + it.productId };
+    var qty = Number(it.boxQty) || 0;
+    if (qty <= 0) return { ok: false, error: '수량은 1박스 이상이어야 합니다.' };
+  }
+
+  var orderId = generateId_('BO');
+  var totalAmount = 0;
+  var totalDonation = 0;
+  var orderItemRows = [];
+
+  items.forEach(function (it) {
+    var product = productMap[it.productId];
+    var qty = Number(it.boxQty);
+    var unitPrice = Number(product.WholesalePrice) || 0;
+    var donationPerBox = Number(product.DonationPerBox) || 0;
+    var lineTotal = qty * unitPrice;
+    var lineDonation = qty * donationPerBox;
+
+    totalAmount += lineTotal;
+    totalDonation += lineDonation;
+
+    orderItemRows.push([orderId, product.ProductID, product.ProductName, qty, unitPrice, lineTotal, donationPerBox, lineDonation]);
+  });
+
+  getSheet_(SHEET_NAMES.B2B_ORDERS).appendRow([
+    orderId,
+    new Date(),
+    distributor.DistributorID,
+    distributor.Name,
+    payload.resoldTo || '',
+    '접수',
+    totalAmount,
+    totalDonation,
+    payload.memo || '',
+    false
+  ]);
+
+  var itemSheet = getSheet_(SHEET_NAMES.B2B_ORDER_ITEMS);
+  orderItemRows.forEach(function (row) { itemSheet.appendRow(row); });
+
+  return { ok: true, orderId: orderId, totalAmount: totalAmount, donationAmount: totalDonation };
+}
+
+function listB2BOrders_(payload) {
+  var orders = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDERS));
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDER_ITEMS));
+
+  if (payload && payload.status) {
+    orders = orders.filter(function (o) { return o.Status === payload.status; });
+  }
+  if (payload && payload.distributorId) {
+    orders = orders.filter(function (o) { return String(o.DistributorID) === String(payload.distributorId); });
+  }
+
+  orders.sort(function (a, b) { return new Date(b.Timestamp) - new Date(a.Timestamp); });
+
+  orders.forEach(function (o) {
+    o.items = items.filter(function (it) { return it.OrderID === o.OrderID; });
+  });
+
+  return { ok: true, orders: orders };
+}
+
+function updateB2BOrderStatus_(payload) {
+  var sheet = getSheet_(SHEET_NAMES.B2B_ORDERS);
+  var rowIndex = findRowIndexById_(sheet, 'OrderID', payload.orderId);
+  if (rowIndex === -1) return { ok: false, error: '주문을 찾을 수 없습니다.' };
+  if (ORDER_STATUSES.indexOf(payload.status) === -1) return { ok: false, error: '올바르지 않은 상태값입니다.' };
+
+  var statusCol = B2B_ORDER_HEADERS.indexOf('Status') + 1;
+  var deductedCol = B2B_ORDER_HEADERS.indexOf('StockDeducted') + 1;
+  var wasDeducted = sheet.getRange(rowIndex, deductedCol).getValue() === true;
+  var newStatus = payload.status;
+
+  if (newStatus === '취소') {
+    if (wasDeducted) {
+      restoreStockForB2BOrder_(payload.orderId);
+      sheet.getRange(rowIndex, deductedCol).setValue(false);
+    }
+  } else if (SHIPPED_STATUSES.indexOf(newStatus) !== -1 && !wasDeducted) {
+    var deductResult = deductStockForB2BOrder_(payload.orderId);
+    if (!deductResult.ok) return deductResult;
+    sheet.getRange(rowIndex, deductedCol).setValue(true);
+  } else if (SHIPPED_STATUSES.indexOf(newStatus) === -1 && wasDeducted) {
+    restoreStockForB2BOrder_(payload.orderId);
+    sheet.getRange(rowIndex, deductedCol).setValue(false);
+  }
+
+  sheet.getRange(rowIndex, statusCol).setValue(newStatus);
+  return { ok: true };
+}
+
+// ---------- B2B 매출 / 통계 / 학회 기부금 ----------
+
+function getB2BStats_(payload) {
+  var orders = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDERS));
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDER_ITEMS));
+
+  var from = payload.from ? new Date(payload.from) : null;
+  var to = payload.to ? new Date(payload.to) : null;
+  if (to) to.setHours(23, 59, 59, 999);
+
+  orders = orders.filter(function (o) {
+    if (o.StockDeducted !== true) return false;
+    var ts = new Date(o.Timestamp);
+    if (from && ts < from) return false;
+    if (to && ts > to) return false;
+    return true;
+  });
+
+  var orderIds = {};
+  orders.forEach(function (o) { orderIds[o.OrderID] = o; });
+  var relevantItems = items.filter(function (it) { return orderIds[it.OrderID]; });
+
+  var totalSales = 0, totalDonation = 0, totalBoxes = 0;
+  var byProduct = {};
+  var byResoldTo = {};
+
+  orders.forEach(function (o) {
+    totalSales += Number(o.TotalAmount) || 0;
+    totalDonation += Number(o.DonationAmount) || 0;
+    var key = o.ResoldTo || '미지정';
+    var stat = byResoldTo[key] || (byResoldTo[key] = { orders: 0, sales: 0 });
+    stat.orders += 1;
+    stat.sales += Number(o.TotalAmount) || 0;
+  });
+
+  relevantItems.forEach(function (it) {
+    totalBoxes += Number(it.BoxQty) || 0;
+    var key = it.ProductID;
+    if (!byProduct[key]) {
+      byProduct[key] = { productId: it.ProductID, productName: it.ProductName, boxes: 0, sales: 0, donation: 0 };
+    }
+    byProduct[key].boxes += Number(it.BoxQty) || 0;
+    byProduct[key].sales += Number(it.LineTotal) || 0;
+    byProduct[key].donation += Number(it.LineDonation) || 0;
+  });
+
+  var config = getConfigMap_();
+
+  return {
+    ok: true,
+    stats: {
+      totalOrders: orders.length,
+      totalBoxes: totalBoxes,
+      totalSales: totalSales,
+      totalDonation: totalDonation,
+      associationName: config.AssociationName || '대한침도의학회',
+      byProduct: Object.keys(byProduct).map(function (k) { return byProduct[k]; }),
+      byResoldTo: byResoldTo
+    }
+  };
+}
+
+// ---------- B2B 거래처별 정산서 ----------
+
+function getDistributorStatement_(payload) {
+  var distributors = sheetToObjects_(getSheet_(SHEET_NAMES.DISTRIBUTORS));
+  var distributor = distributors.filter(function (d) { return String(d.DistributorID) === String(payload.distributorId); })[0];
+  if (!distributor) return { ok: false, error: '거래처를 찾을 수 없습니다.' };
+
+  var from = payload.from ? new Date(payload.from) : null;
+  var to = payload.to ? new Date(payload.to) : null;
+  if (to) to.setHours(23, 59, 59, 999);
+
+  var items = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDER_ITEMS));
+
+  var orders = sheetToObjects_(getSheet_(SHEET_NAMES.B2B_ORDERS)).filter(function (o) {
+    if (String(o.DistributorID) !== String(payload.distributorId)) return false;
+    if (o.StockDeducted !== true) return false;
+    var ts = new Date(o.Timestamp);
+    if (from && ts < from) return false;
+    if (to && ts > to) return false;
+    return true;
+  });
+
+  orders.sort(function (a, b) { return new Date(a.Timestamp) - new Date(b.Timestamp); });
+
+  var grandTotal = 0;
+  var totalBoxes = 0;
+  orders.forEach(function (o) {
+    o.items = items.filter(function (it) { return it.OrderID === o.OrderID; });
+    grandTotal += Number(o.TotalAmount) || 0;
+    o.items.forEach(function (it) { totalBoxes += Number(it.BoxQty) || 0; });
+  });
+
+  return {
+    ok: true,
+    statement: {
+      distributor: distributor,
       from: payload.from || '',
       to: payload.to || '',
       orders: orders,

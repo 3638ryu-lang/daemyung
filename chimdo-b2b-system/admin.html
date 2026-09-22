@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국침도교육원 B2B - 관리자</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- 로그인 화면 -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box card">
+    <h2 id="login-title">관리자 로그인</h2>
+    <div id="login-msg"></div>
+    <div class="field">
+      <label>비밀번호</label>
+      <input type="password" id="login-password" placeholder="관리자 비밀번호">
+    </div>
+    <button type="button" class="btn" id="btn-login" style="width:100%;">로그인</button>
+    <p class="field-hint">B2C 시스템과 같은 구글 시트를 사용하므로, 비밀번호도 B2C의 Config 탭에
+      설정된 값과 동일합니다.</p>
+  </div>
+</div>
+
+<!-- 관리자 메인 화면 -->
+<div id="admin-app" class="hidden">
+  <header class="app-header">
+    <h1 id="site-title">한국침도교육원 B2B</h1>
+    <nav>
+      <a href="#" id="btn-logout">로그아웃</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div id="global-msg"></div>
+    <div class="msg" style="background:#ede9fe;color:#5b21b6;">
+      이 화면은 <strong>B2B(도매) 전용 관리 프로그램</strong>입니다. 재고는 B2C(한의원 대상)
+      시스템과 완전히 공유되며, 여기서 출고 처리한 만큼도 같은 재고에서 함께 차감됩니다.
+    </div>
+
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-tab="orders">주문 접수/관리</button>
+      <button type="button" class="tab-btn" data-tab="inventory">재고 관리</button>
+      <button type="button" class="tab-btn" data-tab="distributors">거래처 관리</button>
+      <button type="button" class="tab-btn" data-tab="stats">매출·기부금 통계</button>
+    </div>
+
+    <!-- 주문 접수/관리 -->
+    <section id="tab-orders" class="tab-panel">
+      <div class="card">
+        <h2>새 주문 입력</h2>
+        <h3>전화/메일 등으로 받은 도매 주문을 여기서 직접 입력합니다.</h3>
+
+        <div class="filter-bar">
+          <div class="field">
+            <label>거래처 *</label>
+            <select id="order-distributor"></select>
+          </div>
+          <div class="field">
+            <label>최종 재판매처 (참고용)</label>
+            <select id="order-resold-to"></select>
+          </div>
+        </div>
+
+        <div id="order-items-container"></div>
+        <button type="button" class="btn secondary small" id="btn-add-item">+ 제품 추가</button>
+
+        <div class="field" style="margin-top:14px;">
+          <label>메모</label>
+          <textarea id="order-memo" placeholder="배송/결제 관련 메모 (선택)"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0;">
+          <span class="text-muted">예상 금액</span>
+          <strong id="order-total-amount" style="font-size:1.2rem;">0원</strong>
+        </div>
+
+        <button type="button" class="btn" id="btn-submit-order">주문 등록</button>
+      </div>
+
+      <div class="card">
+        <h2>주문 목록</h2>
+        <div class="filter-bar">
+          <div class="field">
+            <label>상태</label>
+            <select id="order-filter-status">
+              <option value="">전체</option>
+              <option value="접수">접수</option>
+              <option value="확인중">확인중</option>
+              <option value="배송중">배송중</option>
+              <option value="완료">완료</option>
+              <option value="취소">취소</option>
+            </select>
+          </div>
+          <button type="button" class="btn secondary" id="btn-refresh-orders">새로고침</button>
+        </div>
+        <div id="orders-table-wrap"></div>
+      </div>
+    </section>
+
+    <!-- 재고 관리 -->
+    <section id="tab-inventory" class="tab-panel hidden">
+      <div class="card">
+        <h2>제품 등록 / 도매가 수정</h2>
+        <div class="field-hint" style="margin-bottom:12px;">
+          제품 자체(코드/규격)는 보통 B2C 관리자 페이지에서 등록합니다. 여기서는 주로
+          <strong>도매가(WholesalePrice)</strong>와 재고를 확인/수정합니다.
+        </div>
+        <input type="hidden" id="product-id">
+        <div class="filter-bar">
+          <div class="field"><label>제품명 *</label><input type="text" id="product-name" placeholder="예: 3540"></div>
+          <div class="field"><label>규격</label><input type="text" id="product-spec" placeholder="예: 1box=50개입"></div>
+          <div class="field"><label>도매가(박스당) *</label><input type="number" id="product-wholesale-price" placeholder="0"></div>
+          <div class="field"><label>현재 재고(박스)</label><input type="number" id="product-stock" placeholder="0"></div>
+          <div class="field"><label>박스당 기부금</label><input type="number" id="product-donation" placeholder="0"></div>
+        </div>
+        <button type="button" class="btn" id="btn-save-product">저장</button>
+        <button type="button" class="btn secondary hidden" id="btn-cancel-edit-product">수정 취소</button>
+      </div>
+
+      <div class="card">
+        <h2>제품 목록 (재고는 B2C와 공유됩니다)</h2>
+        <div id="products-table-wrap"></div>
+      </div>
+    </section>
+
+    <!-- 거래처 관리 -->
+    <section id="tab-distributors" class="tab-panel hidden">
+      <div class="card">
+        <h2>거래처(도매상) 등록 / 수정</h2>
+        <input type="hidden" id="distributor-id">
+        <div class="filter-bar">
+          <div class="field"><label>거래처명 *</label><input type="text" id="distributor-name" placeholder="예: 워니리스트"></div>
+          <div class="field"><label>담당자</label><input type="text" id="distributor-contact"></div>
+          <div class="field"><label>연락처</label><input type="tel" id="distributor-phone"></div>
+          <div class="field"><label>이메일</label><input type="email" id="distributor-email"></div>
+          <div class="field"><label>주소</label><input type="text" id="distributor-address"></div>
+        </div>
+        <div class="field"><label>메모</label><textarea id="distributor-note" placeholder="예: 하위 재판매처 목록 등"></textarea></div>
+        <button type="button" class="btn" id="btn-save-distributor">저장</button>
+        <button type="button" class="btn secondary hidden" id="btn-cancel-edit-distributor">수정 취소</button>
+      </div>
+
+      <div class="card">
+        <h2>거래처 목록</h2>
+        <div id="distributors-table-wrap"></div>
+      </div>
+
+      <div class="card">
+        <h2>거래처별 정산서 발급</h2>
+        <div class="field-hint" style="margin-bottom:12px;">
+          선택한 거래처의 지정 기간 동안 <strong>실제 출고된</strong> 주문을 정리해 새 창으로 엽니다.
+        </div>
+        <div class="filter-bar">
+          <div class="field">
+            <label>거래처 선택</label>
+            <select id="statement-distributor"></select>
+          </div>
+          <div class="field"><label>시작일</label><input type="date" id="statement-from"></div>
+          <div class="field"><label>종료일</label><input type="date" id="statement-to"></div>
+          <button type="button" class="btn" id="btn-open-statement">정산서 보기 / 인쇄</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 매출 / 통계 -->
+    <section id="tab-stats" class="tab-panel hidden">
+      <div class="card">
+        <h2>기간별 매출 · 학회 기부금</h2>
+        <div class="filter-bar">
+          <div class="field"><label>시작일</label><input type="date" id="stats-from"></div>
+          <div class="field"><label>종료일</label><input type="date" id="stats-to"></div>
+          <button type="button" class="btn" id="btn-load-stats">조회</button>
+        </div>
+        <div class="field-hint" style="margin-bottom:16px;">※ 출고 전 주문과 취소된 주문은 집계에서 자동으로 제외됩니다.</div>
+
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">총 주문 건수</div><div class="value" id="stat-orders">-</div></div>
+          <div class="stat-tile"><div class="label">총 출고 박스 수</div><div class="value" id="stat-boxes">-</div></div>
+          <div class="stat-tile highlight"><div class="label">총 매출</div><div class="value" id="stat-sales">-</div></div>
+          <div class="stat-tile highlight"><div class="label" id="stat-donation-label">학회 기부금</div><div class="value" id="stat-donation">-</div></div>
+        </div>
+
+        <h3>최종 재판매처별 매출 (참고용)</h3>
+        <div id="stats-by-resold-wrap" style="margin-bottom:20px;"></div>
+
+        <h3>제품별 판매 현황</h3>
+        <div id="stats-by-product-wrap"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>
