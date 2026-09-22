@@ -41,6 +41,7 @@
     btnGuest.classList.remove('active');
     memberArea.classList.remove('hidden');
     guestArea.classList.add('hidden');
+    renderItems(); // 회원/비회원 가격이 다르므로 화면에 표시된 가격을 다시 계산합니다.
   });
   btnGuest.addEventListener('click', function () {
     state.customerType = '비회원';
@@ -48,7 +49,13 @@
     btnMember.classList.remove('active');
     guestArea.classList.remove('hidden');
     memberArea.classList.add('hidden');
+    renderItems();
   });
+
+  // 현재 선택된 회원/비회원 구분에 맞는 박스 단가를 반환합니다.
+  function priceFor(product) {
+    return state.customerType === '회원' ? product.memberPrice : product.guestPrice;
+  }
 
   // ---- 거래처(회원) 목록 로드 ----
   var memberSelect = document.getElementById('member-select');
@@ -86,7 +93,7 @@
   function productOptionsHtml(selectedId) {
     return '<option value="">제품 선택</option>' + state.products.map(function (p) {
       var sel = p.productId === selectedId ? ' selected' : '';
-      return '<option value="' + p.productId + '"' + sel + '>' + escapeHtml(p.productName) + ' - ' + formatWon(p.unitPrice) + '/박스 (재고 ' + p.stockBoxes + ')</option>';
+      return '<option value="' + p.productId + '"' + sel + '>' + escapeHtml(p.productName) + ' - ' + formatWon(priceFor(p)) + '/박스 (재고 ' + p.stockBoxes + ')</option>';
     }).join('');
   }
 
@@ -127,7 +134,7 @@
     var subtotalEls = itemsContainer.querySelectorAll('.item-subtotal');
     state.items.forEach(function (item, idx) {
       var product = state.products.filter(function (p) { return p.productId === item.productId; })[0];
-      var subtotal = product ? product.unitPrice * (item.boxQty || 0) : 0;
+      var subtotal = product ? priceFor(product) * (item.boxQty || 0) : 0;
       total += subtotal;
       if (subtotalEls[idx]) subtotalEls[idx].textContent = product ? formatWon(subtotal) : '';
     });

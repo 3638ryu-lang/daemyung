@@ -209,7 +209,7 @@
         return (
           '<tr>' +
             '<td>' + escapeHtml(p.ProductName) + '<br><span class="text-muted">' + escapeHtml(p.Spec || '') + '</span></td>' +
-            '<td class="text-right">' + formatWon(p.UnitPrice) + '</td>' +
+            '<td class="text-right">회원 ' + formatWon(p.MemberPrice) + '<br><span class="text-muted">비회원 ' + formatWon(p.GuestPrice) + '</span></td>' +
             '<td class="text-right">' + (lowStock ? '<span class="badge status-취소">' + p.StockBoxes + '박스 (부족)</span>' : p.StockBoxes + '박스') + '</td>' +
             '<td class="text-right">' + formatWon(p.DonationPerBox) + '/박스</td>' +
             '<td>' +
@@ -244,7 +244,8 @@
     document.getElementById('product-id').value = p.ProductID;
     document.getElementById('product-name').value = p.ProductName;
     document.getElementById('product-spec').value = p.Spec || '';
-    document.getElementById('product-price').value = p.UnitPrice;
+    document.getElementById('product-member-price').value = p.MemberPrice;
+    document.getElementById('product-guest-price').value = p.GuestPrice;
     document.getElementById('product-stock').value = p.StockBoxes;
     document.getElementById('product-donation').value = p.DonationPerBox;
     document.getElementById('btn-cancel-edit-product').classList.remove('hidden');
@@ -254,7 +255,8 @@
     document.getElementById('product-id').value = '';
     document.getElementById('product-name').value = '';
     document.getElementById('product-spec').value = '';
-    document.getElementById('product-price').value = '';
+    document.getElementById('product-member-price').value = '';
+    document.getElementById('product-guest-price').value = '';
     document.getElementById('product-stock').value = '';
     document.getElementById('product-donation').value = '';
     document.getElementById('btn-cancel-edit-product').classList.add('hidden');
@@ -262,13 +264,18 @@
 
   function saveProduct() {
     var name = document.getElementById('product-name').value.trim();
-    var price = document.getElementById('product-price').value;
-    if (!name || price === '') { showGlobalMsg('제품명과 가격은 필수입니다.', 'error'); return; }
+    var memberPrice = document.getElementById('product-member-price').value;
+    var guestPrice = document.getElementById('product-guest-price').value;
+    if (!name || memberPrice === '' || guestPrice === '') {
+      showGlobalMsg('제품명, 회원가, 비회원가는 필수입니다.', 'error');
+      return;
+    }
 
     var product = {
       ProductName: name,
       Spec: document.getElementById('product-spec').value.trim(),
-      UnitPrice: Number(price),
+      MemberPrice: Number(memberPrice),
+      GuestPrice: Number(guestPrice),
       StockBoxes: Number(document.getElementById('product-stock').value || 0),
       DonationPerBox: Number(document.getElementById('product-donation').value || 0),
       Active: true

@@ -29,7 +29,7 @@ var SHEET_NAMES = {
   CONFIG: 'Config'
 };
 
-var PRODUCT_HEADERS = ['ProductID', 'ProductName', 'Spec', 'UnitPrice', 'StockBoxes', 'DonationPerBox', 'Active'];
+var PRODUCT_HEADERS = ['ProductID', 'ProductName', 'Spec', 'MemberPrice', 'GuestPrice', 'StockBoxes', 'DonationPerBox', 'Active'];
 var CUSTOMER_HEADERS = ['CustomerID', 'Type', 'Name', 'BusinessName', 'Phone', 'Email', 'Address', 'JoinDate', 'Note'];
 var ORDER_HEADERS = ['OrderID', 'Timestamp', 'CustomerType', 'CustomerID', 'CustomerName', 'BusinessName', 'Phone', 'Email', 'Address', 'Status', 'TotalAmount', 'DonationAmount', 'Memo', 'StockDeducted'];
 var ORDER_ITEM_HEADERS = ['OrderID', 'ProductID', 'ProductName', 'BoxQty', 'UnitPrice', 'LineTotal', 'DonationPerBox', 'LineDonation'];
@@ -66,10 +66,42 @@ function initializeSheets() {
 
   var productSheet = ss.getSheetByName(SHEET_NAMES.PRODUCTS);
   if (productSheet.getLastRow() < 2) {
-    productSheet.appendRow(['P001', '침도 (예시 제품)', '1box=10개입', 50000, 100, 1000, true]);
+    // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active
+    productSheet.appendRow(['P001', '침도 (예시 제품)', '1box=10개입', 45000, 50000, 100, 1000, true]);
   }
 
   Logger.log('초기화 완료. Config 시트에서 AdminPassword를 꼭 변경하세요.');
+}
+
+/**
+ * [1회성 실행용] 실제 판매 제품 8종으로 Products 시트를 새로 채웁니다.
+ * Apps Script 편집기에서 함수 선택 드롭다운에 이 함수를 선택하고
+ * 실행(▶) 버튼을 눌러 딱 한 번만 실행하세요.
+ *
+ * ⚠️ 기존 Products 시트 내용을 전부 지우고 아래 8개 제품으로 새로 채웁니다.
+ * 이미 등록해둔 다른 제품이 있다면 이 함수를 실행하기 전에 먼저 백업해두세요.
+ *
+ * 재고 수량(StockBoxes)은 우선 0으로 채워집니다. 실제 현재 재고 수량은
+ * 이 함수 실행 후 관리자 페이지의 "재고 관리" 탭에서 직접 입력해주세요.
+ * 학회 기부금(DonationPerBox)도 일단 기존 기본값(1,000원/박스)으로 채워지니,
+ * 제품마다 다르게 설정하고 싶으시면 관리자 페이지에서 수정해주세요.
+ */
+function setupRealProducts() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAMES.PRODUCTS);
+  if (!sheet) sheet = ss.insertSheet(SHEET_NAMES.PRODUCTS);
+
+  sheet.clear();
+  sheet.appendRow(PRODUCT_HEADERS);
+  sheet.setFrozenRows(1);
+
+  // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active
+  var codes = ['3540', '4030', '4040', '5060', '6050', '6075', '5040', '8080'];
+  codes.forEach(function (code) {
+    sheet.appendRow([code, code, '1box=50개입', 21000, 23000, 0, 1000, true]);
+  });
+
+  Logger.log('실제 판매 제품 8종(' + codes.join(', ') + ')으로 Products 시트를 새로 설정했습니다. 재고 수량은 관리자 페이지에서 실제 값으로 수정해주세요.');
 }
 
 function ensureSheetWithHeaders_(ss, name, headers) {
@@ -250,7 +282,8 @@ function getPublicProducts_() {
         productId: r.ProductID,
         productName: r.ProductName,
         spec: r.Spec,
-        unitPrice: Number(r.UnitPrice) || 0,
+        memberPrice: Number(r.MemberPrice) || 0,
+        guestPrice: Number(r.GuestPrice) || 0,
         stockBoxes: Number(r.StockBoxes) || 0
       };
     });
@@ -280,7 +313,8 @@ function upsertProduct_(payload) {
       newId,
       p.ProductName || '',
       p.Spec || '',
-      Number(p.UnitPrice) || 0,
+      Number(p.MemberPrice) || 0,
+      Number(p.GuestPrice) || 0,
       Number(p.StockBoxes) || 0,
       Number(p.DonationPerBox) || 0,
       p.Active === false ? false : true
@@ -428,7 +462,8 @@ function createOrder_(payload) {
   items.forEach(function (it) {
     var product = productMap[it.productId];
     var qty = Number(it.boxQty);
-    var unitPrice = Number(product.UnitPrice) || 0;
+    // 회원/비회원 여부에 따라 다른 박스 단가를 적용합니다.
+    var unitPrice = customerType === '회원' ? (Number(product.MemberPrice) || 0) : (Number(product.GuestPrice) || 0);
     var donationPerBox = Number(product.DonationPerBox) || 0;
     var lineTotal = qty * unitPrice;
     var lineDonation = qty * donationPerBox;
