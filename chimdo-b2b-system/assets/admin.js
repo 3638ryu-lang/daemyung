@@ -247,7 +247,7 @@
             '<td>' + formatDate(o.Timestamp) + '<br><span class="text-muted">' + escapeHtml(o.OrderID) + '</span></td>' +
             '<td>' + escapeHtml(o.DistributorName) + (o.ResoldTo ? '<br><span class="text-muted">→ ' + escapeHtml(o.ResoldTo) + '</span>' : '') + '</td>' +
             '<td>' + itemsText + '</td>' +
-            '<td class="text-right">' + formatWon(o.TotalAmount) + '<br><span class="text-muted">기부금 ' + formatWon(o.DonationAmount) + '</span></td>' +
+            '<td class="text-right">' + formatWon(o.TotalAmount) + '</td>' +
             '<td>' +
               '<select class="order-status-select" data-order-id="' + o.OrderID + '" data-deducted="' + deducted + '">' + statusOptions + '</select>' +
               (deducted
@@ -306,7 +306,6 @@
             '<td>' + escapeHtml(p.ProductName) + '<br><span class="text-muted">' + escapeHtml(p.Spec || '') + '</span></td>' +
             '<td class="text-right">도매 ' + formatWon(p.WholesalePrice) + '<br><span class="text-muted">회원 ' + formatWon(p.MemberPrice) + ' / 비회원 ' + formatWon(p.GuestPrice) + '</span></td>' +
             '<td class="text-right">' + (lowStock ? '<span class="badge status-취소">' + p.StockBoxes + '박스 (부족)</span>' : p.StockBoxes + '박스') + '</td>' +
-            '<td class="text-right">' + formatWon(p.DonationPerBox) + '/박스</td>' +
             '<td>' +
               '<button type="button" class="btn secondary small stock-adjust" data-id="' + p.ProductID + '" data-delta="1">+1</button> ' +
               '<button type="button" class="btn secondary small stock-adjust" data-id="' + p.ProductID + '" data-delta="-1">-1</button> ' +
@@ -316,7 +315,7 @@
         );
       }).join('');
 
-      wrap.innerHTML = '<table><thead><tr><th>제품</th><th>가격(도매/회원/비회원)</th><th>재고(B2C 공유)</th><th>기부금</th><th>관리</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      wrap.innerHTML = '<table><thead><tr><th>제품</th><th>가격(도매/회원/비회원)</th><th>재고(B2C 공유)</th><th>관리</th></tr></thead><tbody>' + rows + '</tbody></table>';
 
       Array.prototype.forEach.call(wrap.querySelectorAll('.stock-adjust'), function (btn) {
         btn.addEventListener('click', function () {
@@ -341,7 +340,6 @@
     document.getElementById('product-spec').value = p.Spec || '';
     document.getElementById('product-wholesale-price').value = p.WholesalePrice;
     document.getElementById('product-stock').value = p.StockBoxes;
-    document.getElementById('product-donation').value = p.DonationPerBox;
     document.getElementById('btn-cancel-edit-product').classList.remove('hidden');
   }
 
@@ -351,7 +349,6 @@
     document.getElementById('product-spec').value = '';
     document.getElementById('product-wholesale-price').value = '';
     document.getElementById('product-stock').value = '';
-    document.getElementById('product-donation').value = '';
     document.getElementById('btn-cancel-edit-product').classList.add('hidden');
   }
 
@@ -360,12 +357,13 @@
     var wholesalePrice = document.getElementById('product-wholesale-price').value;
     if (!name || wholesalePrice === '') { showGlobalMsg('제품명과 도매가는 필수입니다.', 'error'); return; }
 
+    // DonationPerBox는 여기서 보내지 않습니다 — B2B는 기부금을 다루지 않으며,
+    // upsertProduct_는 기존 제품 수정 시 보내지 않은 필드를 그대로 유지합니다.
     var product = {
       ProductName: name,
       Spec: document.getElementById('product-spec').value.trim(),
       WholesalePrice: Number(wholesalePrice),
       StockBoxes: Number(document.getElementById('product-stock').value || 0),
-      DonationPerBox: Number(document.getElementById('product-donation').value || 0),
       Active: true
     };
     var id = document.getElementById('product-id').value;
@@ -484,7 +482,7 @@
     window.open(url, '_blank');
   }
 
-  // ================= 매출 / 통계 / 기부금 =================
+  // ================= 매출 / 통계 =================
   function loadStats() {
     var payload = {
       from: document.getElementById('stats-from').value,
@@ -497,8 +495,6 @@
       document.getElementById('stat-orders').textContent = s.totalOrders;
       document.getElementById('stat-boxes').textContent = s.totalBoxes + '박스';
       document.getElementById('stat-sales').textContent = formatWon(s.totalSales);
-      document.getElementById('stat-donation').textContent = formatWon(s.totalDonation);
-      document.getElementById('stat-donation-label').textContent = s.associationName + ' 기부금';
 
       var resoldRows = Object.keys(s.byResoldTo).map(function (key) {
         var t = s.byResoldTo[key];
@@ -514,11 +510,11 @@
         var productRows = s.byProduct.map(function (p) {
           return (
             '<tr><td>' + escapeHtml(p.productName) + '</td><td class="text-right">' + p.boxes + '박스</td>' +
-            '<td class="text-right">' + formatWon(p.sales) + '</td><td class="text-right">' + formatWon(p.donation) + '</td></tr>'
+            '<td class="text-right">' + formatWon(p.sales) + '</td></tr>'
           );
         }).join('');
         document.getElementById('stats-by-product-wrap').innerHTML =
-          '<table><thead><tr><th>제품</th><th>판매 박스</th><th>매출</th><th>기부금</th></tr></thead><tbody>' + productRows + '</tbody></table>';
+          '<table><thead><tr><th>제품</th><th>판매 박스</th><th>매출</th></tr></thead><tbody>' + productRows + '</tbody></table>';
       }
     });
   }

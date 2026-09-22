@@ -43,7 +43,7 @@
       <button type="button" class="tab-btn active" data-tab="orders">주문 접수/관리</button>
       <button type="button" class="tab-btn" data-tab="inventory">재고 관리</button>
       <button type="button" class="tab-btn" data-tab="distributors">거래처 관리</button>
-      <button type="button" class="tab-btn" data-tab="stats">매출·기부금 통계</button>
+      <button type="button" class="tab-btn" data-tab="stats">매출 통계</button>
     </div>
 
     <!-- 주문 접수/관리 -->
@@ -113,7 +113,6 @@
           <div class="field"><label>규격</label><input type="text" id="product-spec" placeholder="예: 1box=50개입"></div>
           <div class="field"><label>도매가(박스당) *</label><input type="number" id="product-wholesale-price" placeholder="0"></div>
           <div class="field"><label>현재 재고(박스)</label><input type="number" id="product-stock" placeholder="0"></div>
-          <div class="field"><label>박스당 기부금</label><input type="number" id="product-donation" placeholder="0"></div>
         </div>
         <button type="button" class="btn" id="btn-save-product">저장</button>
         <button type="button" class="btn secondary hidden" id="btn-cancel-edit-product">수정 취소</button>
@@ -167,7 +166,7 @@
     <!-- 매출 / 통계 -->
     <section id="tab-stats" class="tab-panel hidden">
       <div class="card">
-        <h2>기간별 매출 · 학회 기부금</h2>
+        <h2>기간별 매출</h2>
         <div class="filter-bar">
           <div class="field"><label>시작일</label><input type="date" id="stats-from"></div>
           <div class="field"><label>종료일</label><input type="date" id="stats-to"></div>
@@ -179,7 +178,6 @@
           <div class="stat-tile"><div class="label">총 주문 건수</div><div class="value" id="stat-orders">-</div></div>
           <div class="stat-tile"><div class="label">총 출고 박스 수</div><div class="value" id="stat-boxes">-</div></div>
           <div class="stat-tile highlight"><div class="label">총 매출</div><div class="value" id="stat-sales">-</div></div>
-          <div class="stat-tile highlight"><div class="label" id="stat-donation-label">학회 기부금</div><div class="value" id="stat-donation">-</div></div>
         </div>
 
         <h3>최종 재판매처별 매출 (참고용)</h3>

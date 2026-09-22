@@ -842,21 +842,19 @@ function createB2BOrder_(payload) {
 
   var orderId = generateId_('BO');
   var totalAmount = 0;
-  var totalDonation = 0;
   var orderItemRows = [];
 
+  // B2B(도매)는 학회 기부금 집계 대상이 아니므로 기부금은 계산하지 않고 0으로 둡니다.
+  // (Products 시트의 DonationPerBox 열 자체는 B2C가 계속 사용하므로 그대로 둡니다.)
   items.forEach(function (it) {
     var product = productMap[it.productId];
     var qty = Number(it.boxQty);
     var unitPrice = Number(product.WholesalePrice) || 0;
-    var donationPerBox = Number(product.DonationPerBox) || 0;
     var lineTotal = qty * unitPrice;
-    var lineDonation = qty * donationPerBox;
 
     totalAmount += lineTotal;
-    totalDonation += lineDonation;
 
-    orderItemRows.push([orderId, product.ProductID, product.ProductName, qty, unitPrice, lineTotal, donationPerBox, lineDonation]);
+    orderItemRows.push([orderId, product.ProductID, product.ProductName, qty, unitPrice, lineTotal, 0, 0]);
   });
 
   getSheet_(SHEET_NAMES.B2B_ORDERS).appendRow([
@@ -867,7 +865,7 @@ function createB2BOrder_(payload) {
     payload.resoldTo || '',
     '접수',
     totalAmount,
-    totalDonation,
+    0,
     payload.memo || '',
     false
   ]);
@@ -875,7 +873,7 @@ function createB2BOrder_(payload) {
   var itemSheet = getSheet_(SHEET_NAMES.B2B_ORDER_ITEMS);
   orderItemRows.forEach(function (row) { itemSheet.appendRow(row); });
 
-  return { ok: true, orderId: orderId, totalAmount: totalAmount, donationAmount: totalDonation };
+  return { ok: true, orderId: orderId, totalAmount: totalAmount };
 }
 
 function listB2BOrders_(payload) {
@@ -949,13 +947,13 @@ function getB2BStats_(payload) {
   orders.forEach(function (o) { orderIds[o.OrderID] = o; });
   var relevantItems = items.filter(function (it) { return orderIds[it.OrderID]; });
 
-  var totalSales = 0, totalDonation = 0, totalBoxes = 0;
+  // B2B는 학회 기부금을 집계하지 않습니다.
+  var totalSales = 0, totalBoxes = 0;
   var byProduct = {};
   var byResoldTo = {};
 
   orders.forEach(function (o) {
     totalSales += Number(o.TotalAmount) || 0;
-    totalDonation += Number(o.DonationAmount) || 0;
     var key = o.ResoldTo || '미지정';
     var stat = byResoldTo[key] || (byResoldTo[key] = { orders: 0, sales: 0 });
     stat.orders += 1;
@@ -966,14 +964,11 @@ function getB2BStats_(payload) {
     totalBoxes += Number(it.BoxQty) || 0;
     var key = it.ProductID;
     if (!byProduct[key]) {
-      byProduct[key] = { productId: it.ProductID, productName: it.ProductName, boxes: 0, sales: 0, donation: 0 };
+      byProduct[key] = { productId: it.ProductID, productName: it.ProductName, boxes: 0, sales: 0 };
     }
     byProduct[key].boxes += Number(it.BoxQty) || 0;
     byProduct[key].sales += Number(it.LineTotal) || 0;
-    byProduct[key].donation += Number(it.LineDonation) || 0;
   });
-
-  var config = getConfigMap_();
 
   return {
     ok: true,
@@ -981,8 +976,6 @@ function getB2BStats_(payload) {
       totalOrders: orders.length,
       totalBoxes: totalBoxes,
       totalSales: totalSales,
-      totalDonation: totalDonation,
-      associationName: config.AssociationName || '대한침도의학회',
       byProduct: Object.keys(byProduct).map(function (k) { return byProduct[k]; }),
       byResoldTo: byResoldTo
     }
