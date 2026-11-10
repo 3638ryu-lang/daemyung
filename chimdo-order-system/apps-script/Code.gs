@@ -82,7 +82,7 @@ function initializeSheets() {
   var defaults = [
     ['AdminPassword', 'changeme123'],
     ['AssociationName', '대한침도의학회'],
-    ['DefaultDonationPerBox', '1000']
+    ['DefaultDonationPerBox', '0']
   ];
   defaults.forEach(function (pair) {
     if (existingKeys.indexOf(pair[0]) === -1) {
@@ -93,7 +93,7 @@ function initializeSheets() {
   var productSheet = ss.getSheetByName(SHEET_NAMES.PRODUCTS);
   if (productSheet.getLastRow() < 2) {
     // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active, WholesalePrice(도매가)
-    productSheet.appendRow(['P001', '침도 (예시 제품)', '1box=10개입', 45000, 50000, 100, 1000, true, 40000]);
+    productSheet.appendRow(['P001', '침도 (예시 제품)', '1box=10개입', 45000, 50000, 100, 0, true, 40000]);
   }
 
   var distributorSheet = ss.getSheetByName(SHEET_NAMES.DISTRIBUTORS);
@@ -138,7 +138,7 @@ function setupRealProducts() {
   // ProductID, ProductName, Spec, MemberPrice(회원가), GuestPrice(비회원가), StockBoxes, DonationPerBox, Active, WholesalePrice(도매가)
   var codes = ['3540', '4030', '4040', '5060', '6050', '6075', '5040', '8080'];
   codes.forEach(function (code) {
-    sheet.appendRow([code, code, '1box=50개입', 21000, 23000, 0, 1000, true, 0]);
+    sheet.appendRow([code, code, '1box=50개입', 21000, 23000, 0, 0, true, 0]);
   });
 
   Logger.log('실제 판매 제품 8종(' + codes.join(', ') + ')으로 Products 시트를 새로 설정했습니다. 재고 수량은 관리자 페이지에서 실제 값으로 수정해주세요.');
